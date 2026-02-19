@@ -7,21 +7,7 @@ export default {
         sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'Fira Code', 'monospace']
       },
-      colors: {
-        'lab': {
-          950: '#0a0e27',
-          900: '#0f1437',
-          850: '#151d3b',
-          800: '#1a2547',
-          700: '#2a3a63',
-          600: '#3a4a83',
-          500: '#4a5aa3',
-          400: '#5a6ac3',
-          300: '#7a8ad3',
-          200: '#9aaaeb',
-          100: '#bac6f3'
-        }
-      },
+
       backgroundImage: {
         'gradient-lab': 'linear-gradient(135deg, #0f1437 0%, #1a2547 100%)',
         'gradient-accent': 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
