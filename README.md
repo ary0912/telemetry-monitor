@@ -1,10 +1,12 @@
-# Telemetry Monitor
+# Telemetry Monitoring System
 
-A production-grade real-time telemetry monitoring system for experimental hardware. Built for engineers, by engineers. No fluff.
+A professional real-time telemetry monitoring system for experimental hardware systems. Built with Node.js/Express backend, React/TypeScript frontend, and WebSocket real-time streaming.
+
+**🚀 Live Demo:** Coming soon after GitHub push!
 
 ## Overview
 
-This is an internal monitoring dashboard used to stream and analyze high-frequency telemetry data from experimental systems. The system detects anomalies in real time using statistical deviation analysis and provides an intuitive interface for engineers to monitor system health.
+This is a production-grade internal monitoring dashboard designed for scientists and hardware engineers running high-frequency experimental systems. Stream and analyze telemetry data in real-time, with statistical anomaly detection and an intuitive dark-themed interface optimized for lab environments.
 
 ## Features
 
@@ -38,84 +40,98 @@ This is an internal monitoring dashboard used to stream and analyze high-frequen
 ```
 telemetry-monitor/
 ├── backend/
-│   ├── server.js          # Express + WebSocket server
-│   └── package.json
+│   ├── server.js           # Express + WebSocket server
+│   ├── package.json
+│   ├── Procfile            # Railway deployment
+│   └── .env.example
 ├── frontend/
 │   ├── src/
-│   │   ├── components/    # UI components (Dashboard, Chart, etc.)
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── services/      # WebSocket service
-│   │   ├── store/         # Zustand state management
-│   │   ├── types/         # TypeScript type definitions
-│   │   ├── utils/         # Anomaly detection, formatting
+│   │   ├── components/     # React components (Dashboard, Charts, etc.)
+│   │   ├── hooks/          # Custom hooks (WebSocket connection)
+│   │   ├── store/          # Zustand state management
+│   │   ├── utils/          # Anomaly detection, formatting
 │   │   ├── App.tsx
-│   │   ├── main.tsx
-│   │   └── index.css      # Tailwind + custom styles
-│   ├── index.html
+│   │   └── main.tsx
 │   ├── vite.config.ts
-│   ├── tsconfig.json
 │   ├── tailwind.config.js
 │   └── package.json
-└── README.md
+├── README.md
+├── vercel.json             # Vercel deployment config
+└── .gitignore
 ```
 
-## Setup
+## Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
+### Local Development
 
-### Installation
+**Prerequisites:** Node.js 18+
 
-1. **Backend setup:**
-```bash
-cd backend
-npm install
+1. **Clone and install:**
+   ```bash
+   git clone <repo-url>
+   cd telemetry-monitor
+   npm install
+   cd frontend && npm install && cd ..
+   ```
+
+2. **Start backend:**
+   ```bash
+   cd backend && node server.js
+   ```
+   Runs on `http://localhost:8080`
+
+3. **Start frontend (new terminal):**
+   ```bash
+   cd frontend && npm run dev
+   ```
+   Runs on `http://localhost:3000`
+
+## Deployment
+
+### Frontend (Vercel - Free)
+
+1. Push code to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project
+3. Import your GitHub repository
+4. Vercel auto-detects Vite configuration
+5. Add environment variable:
+   - `VITE_API_BASE_URL` = Your backend URL
+6. Deploy!
+
+### Backend (Railway - Free)
+
+1. Go to [railway.app](https://railway.app) → New Project
+2. Deploy from GitHub repository
+3. Railway auto-detects Node.js
+4. Set environment variables in Railway dashboard:
+   - `PORT` = 8080
+   - `NODE_ENV` = production
+5. Copy the Railway URL and set it as `VITE_API_BASE_URL` in Vercel
+
+## API Reference
+
+### WebSocket: `ws://localhost:8080/api/telemetry`
+
+Real-time telemetry stream (400ms updates)
+
+**Message format:**
+```json
+{
+  "timestamp": 1697894400000,
+  "temperature": 45.2,
+  "pressure": 1013.25,
+  "vibration": 0.12,
+  "humidity": 65.4,
+  "anomalies": ["temperature"]
+}
 ```
-
-2. **Frontend setup:**
-```bash
-cd frontend
-npm install
-```
-
-### Running Locally
-
-1. **Start the backend server:**
-```bash
-cd backend
-npm start
-# Server runs on http://localhost:8080
-# WebSocket available at ws://localhost:8080/ws
-```
-
-2. **In a new terminal, start the frontend dev server:**
-```bash
-cd frontend
-npm run dev
-# Opens http://localhost:3000 automatically
-```
-
-The dashboard will load and immediately begin streaming telemetry data from the backend.
-
-## API Endpoints
-
-### WebSocket: `ws://localhost:8080/ws`
-
-**Incoming messages:**
-- `type: "telemetry"` - Real-time telemetry reading with all 7 metrics
-- `type: "status"` - Connection status and server info
-
-**Outgoing messages:**
-- `type: "anomaly"` - Client sends detected anomaly to server
 
 ### REST Endpoints
 
-- `GET /api/health` - Server health status
-- `GET /api/anomalies` - Get anomaly log (query: `limit` - default 100)
-- `GET /api/anomalies/:id` - Get specific anomaly by index
+- `GET /api/health` - Server health & status
+- `GET /api/anomalies` - Anomaly log (latest)
 
-## Telemetry Metrics
+## Architecture Details
 
 The system monitors:
 
