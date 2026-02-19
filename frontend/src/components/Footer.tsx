@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTelemetryStore } from '../store/telemetry';
+import { Wifi, Clock, Signal } from 'lucide-react';
 
 export function Footer() {
   const wsLatency = useTelemetryStore((s) => s.wsLatency);
@@ -11,7 +12,6 @@ export function Footer() {
   useEffect(() => {
     if (readings.length < 2) return;
 
-    // Calculate streaming frequency based on last few readings
     const recentReadings = readings.slice(-10);
     if (recentReadings.length < 2) return;
 
@@ -24,24 +24,40 @@ export function Footer() {
   }, [readings]);
 
   return (
-    <div className="border-t border-slate-800 bg-slate-900 px-6 py-3 flex items-center justify-between text-xs text-slate-400">
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-slate-600'}`} />
-          <span>{connected ? 'Connected' : 'Disconnected'}</span>
+    <div className="border-t border-lab-800 bg-lab-900 px-6 py-3 flex items-center justify-between text-xs text-slate-400 font-medium">
+      <div className="flex items-center gap-8">
+        {/* Connection */}
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
+          <Wifi size={14} className={connected ? 'text-emerald-400' : 'text-slate-600'} />
+          <span className={connected ? 'text-emerald-400 font-semibold' : 'text-slate-500'}>
+            {connected ? 'Connected' : 'Offline'}
+          </span>
         </div>
 
-        <div className="font-mono">
-          Latency: <span className="text-slate-300">{wsLatency.toFixed(0)}ms</span>
+        {/* Latency */}
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
+          <Clock size={14} className="text-cyan-400" />
+          <span className="text-slate-300 font-mono font-semibold">{wsLatency.toFixed(0)}ms</span>
         </div>
 
-        <div className="font-mono">
-          Frequency: <span className="text-slate-300">{streamingFreq}</span>
+        {/* Frequency */}
+        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
+          <Signal size={14} className="text-purple-400" />
+          <span className="text-slate-300 font-mono font-semibold">{streamingFreq}</span>
         </div>
       </div>
 
-      <div className="font-mono text-slate-500">
-        Messages: <span className="text-slate-300">{messageCount}</span>
+      {/* Right side stats */}
+      <div className="flex items-center gap-6 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
+        <div className="text-center">
+          <p className="text-slate-500 text-xs">Total samples</p>
+          <p className="font-mono text-slate-300 font-bold">{messageCount.toLocaleString()}</p>
+        </div>
+        <div className="w-px h-6 bg-lab-700" />
+        <div className="text-center">
+          <p className="text-slate-500 text-xs">Data points</p>
+          <p className="font-mono text-slate-300 font-bold">{readings.length.toLocaleString()}</p>
+        </div>
       </div>
     </div>
   );

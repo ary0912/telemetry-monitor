@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useTelemetryStore } from '../store/telemetry';
 import { AnomalyEvent } from '../types';
 import { formatRelativeTime } from '../utils/formatting';
-import { AlertCircleIcon, DownloadIcon, TrashIcon } from 'lucide-react';
+import { AlertCircleIcon, DownloadIcon, TrashIcon, TrendingUp } from 'lucide-react';
 import { exportAnomaliesAsCSV, downloadCSV } from '../utils/formatting';
 
 interface Props {
@@ -18,13 +18,24 @@ export function AnomalyFeed({ anomalies }: Props) {
     downloadCSV(csv, `anomalies-${new Date().getTime()}.csv`);
   };
 
+  const getDeviationColor = (deviation: number) => {
+    const abs = Math.abs(deviation);
+    if (abs > 3) return 'text-red-400 bg-red-950';
+    if (abs > 2.5) return 'text-orange-400 bg-orange-950';
+    if (abs > 2) return 'text-yellow-400 bg-yellow-950';
+    return 'text-cyan-400 bg-cyan-950';
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-4 border-b border-slate-800">
+      <div className="p-4 border-b border-lab-800">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-slate-100 text-sm">Deviations</h3>
-          <span className="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded">
+          <div className="flex items-center gap-2">
+            <TrendingUp size={16} className="text-cyan-400" />
+            <h3 className="font-bold text-white">Deviations</h3>
+          </div>
+          <span className="text-xs font-mono bg-lab-800 text-cyan-400 px-2.5 py-1 rounded-full font-semibold">
             {anomalies.length}
           </span>
         </div>
@@ -34,28 +45,46 @@ export function AnomalyFeed({ anomalies }: Props) {
       {/* Anomalies list */}
       <div className="flex-1 overflow-y-auto">
         {anomalies.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-slate-500">
-            <p className="text-sm">All monitored signals within expected range</p>
+          <div className="flex items-center justify-center h-full text-slate-500 p-4">
+            <div className="text-center">
+              <div className="w-10 h-10 rounded-full bg-lab-800 mx-auto mb-3 flex items-center justify-center">
+                <AlertCircleIcon size={16} className="text-slate-600" />
+              </div>
+              <p className="text-sm font-medium">All signals normal</p>
+              <p className="text-xs mt-1">No deviations detected</p>
+            </div>
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
+          <div className="divide-y divide-lab-800">
             {anomalies.map((anomaly, idx) => (
-              <div key={idx} className="p-3 hover:bg-slate-800 transition-colors">
-                <div className="flex items-start gap-2">
-                  <AlertCircleIcon size={14} className="mt-0.5 text-amber-500 flex-shrink-0" />
+              <div
+                key={idx}
+                className="p-3 hover:bg-lab-800 transition-colors duration-200 group"
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`mt-0.5 p-1.5 rounded-lg ${getDeviationColor(
+                      anomaly.deviation
+                    )}`}
+                  >
+                    <AlertCircleIcon size={12} />
+                  </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xs font-mono text-slate-300">
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className="text-xs font-bold text-white uppercase tracking-wide">
                         {anomaly.metric}
                       </span>
                       <span className="text-xs text-slate-500">
                         {formatRelativeTime(anomaly.timestamp)}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Deviation: <span className="text-slate-200">Δ {anomaly.deviation.toFixed(2)}σ</span>
+                    <p className="text-xs text-slate-400 mb-1.5">
+                      Deviation:{' '}
+                      <span className={`font-bold ${getDeviationColor(anomaly.deviation)}`}>
+                        Δ {anomaly.deviation.toFixed(2)}σ
+                      </span>
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 font-mono">
                       Value: {anomaly.value.toFixed(3)}
                     </p>
                   </div>
@@ -67,21 +96,21 @@ export function AnomalyFeed({ anomalies }: Props) {
       </div>
 
       {/* Actions */}
-      <div className="border-t border-slate-800 p-3 flex gap-2">
+      <div className="border-t border-lab-800 p-3 flex gap-2">
         <button
           onClick={handleExport}
           disabled={anomalies.length === 0}
-          className="flex-1 flex items-center justify-center gap-2 px-2 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-slate-300 transition-colors"
+          className="flex-1 btn-secondary text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <DownloadIcon size={14} />
-          Export CSV
+          <DownloadIcon size={13} />
+          Export
         </button>
         <button
           onClick={() => clearAnomalies()}
           disabled={anomalies.length === 0}
-          className="flex-1 flex items-center justify-center gap-2 px-2 py-1.5 text-xs bg-slate-800 hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-slate-300 transition-colors"
+          className="flex-1 btn-secondary text-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <TrashIcon size={14} />
+          <TrashIcon size={13} />
           Clear
         </button>
       </div>
