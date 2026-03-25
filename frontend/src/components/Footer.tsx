@@ -1,12 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useTelemetryStore } from '../store/telemetry';
-import { Wifi, Clock, Signal } from 'lucide-react';
+import { useAppSelector } from '../store';
+import { Wifi, Clock, Signal, Database, Activity } from 'lucide-react';
 
 export function Footer() {
-  const wsLatency = useTelemetryStore((s) => s.wsLatency);
-  const messageCount = useTelemetryStore((s) => s.messageCount);
-  const readings = useTelemetryStore((s) => s.readings);
-  const connected = useTelemetryStore((s) => s.connected);
+  const { wsLatency, messageCount, readings, connected } = useAppSelector((state) => state.telemetry);
   const [streamingFreq, setStreamingFreq] = useState('0.0 Hz');
 
   useEffect(() => {
@@ -24,39 +21,54 @@ export function Footer() {
   }, [readings]);
 
   return (
-    <div className="border-t border-lab-800 bg-lab-900 px-6 py-3 flex items-center justify-between text-xs text-slate-400 font-medium">
-      <div className="flex items-center gap-8">
+    <div className="border-t border-white/5 bg-surface/80 backdrop-blur-md px-8 py-4 flex items-center justify-between">
+      <div className="flex items-center gap-10">
         {/* Connection */}
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
-          <Wifi size={14} className={connected ? 'text-emerald-400' : 'text-slate-600'} />
-          <span className={connected ? 'text-emerald-400 font-semibold' : 'text-slate-500'}>
-            {connected ? 'Connected' : 'Offline'}
-          </span>
+        <div className="flex items-center gap-3">
+          <Wifi size={14} className={connected ? 'text-cyber-cyan animate-pulse' : 'text-slate-600'} />
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Network</span>
+            <span className={`text-[10px] uppercase font-black tracking-widest leading-none ${connected ? 'text-white' : 'text-slate-600'}`}>
+              {connected ? 'Active_Link' : 'Link_Lost'}
+            </span>
+          </div>
         </div>
 
         {/* Latency */}
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
-          <Clock size={14} className="text-cyan-400" />
-          <span className="text-slate-300 font-mono font-semibold">{wsLatency.toFixed(0)}ms</span>
+        <div className="flex items-center gap-3">
+          <Clock size={14} className="text-cyber-purple" />
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Latency</span>
+            <span className="text-[10px] text-white font-mono font-black tracking-widest leading-none">{wsLatency.toFixed(0)}ms</span>
+          </div>
         </div>
 
         {/* Frequency */}
-        <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
-          <Signal size={14} className="text-purple-400" />
-          <span className="text-slate-300 font-mono font-semibold">{streamingFreq}</span>
+        <div className="flex items-center gap-3">
+          <Signal size={14} className="text-cyber-cyan" />
+          <div className="flex flex-col">
+            <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Sampling</span>
+            <span className="text-[10px] text-white font-mono font-black tracking-widest leading-none">{streamingFreq}</span>
+          </div>
         </div>
       </div>
 
       {/* Right side stats */}
-      <div className="flex items-center gap-6 px-3 py-2 rounded-lg bg-lab-800 border border-lab-700">
-        <div className="text-center">
-          <p className="text-slate-500 text-xs">Total samples</p>
-          <p className="font-mono text-slate-300 font-bold">{messageCount.toLocaleString()}</p>
+      <div className="flex items-center gap-8">
+        <div className="flex items-center gap-3">
+          <Database size={14} className="text-slate-500" />
+          <div className="flex flex-col text-right">
+            <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Total_Packets</span>
+            <span className="text-[10px] text-white font-mono font-black tracking-widest leading-none">{messageCount.toLocaleString()}</span>
+          </div>
         </div>
-        <div className="w-px h-6 bg-lab-700" />
-        <div className="text-center">
-          <p className="text-slate-500 text-xs">Data points</p>
-          <p className="font-mono text-slate-300 font-bold">{readings.length.toLocaleString()}</p>
+        <div className="w-px h-6 bg-white/10" />
+        <div className="flex items-center gap-3">
+          <Activity size={14} className="text-slate-500" />
+          <div className="flex flex-col text-right">
+            <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest leading-none mb-1">Buffer_Size</span>
+            <span className="text-[10px] text-white font-mono font-black tracking-widest leading-none">{readings.length.toLocaleString()}</span>
+          </div>
         </div>
       </div>
     </div>

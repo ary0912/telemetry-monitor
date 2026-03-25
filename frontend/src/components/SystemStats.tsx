@@ -31,57 +31,54 @@ export function SystemStats({ readings }: Props) {
   }, [readings]);
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 border-b border-lab-800 flex items-center gap-2">
-        <BarChart3 size={16} className="text-cyan-400" />
-        <div>
-          <h3 className="font-bold text-white">System summary</h3>
-          <p className="text-xs text-slate-500">1-minute rolling average</p>
-        </div>
-      </div>
+    <div className="flex flex-col h-full bg-deep">
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-3">
-          {DISPLAY_METRICS.map((metric) => {
-            const config = METRIC_CONFIGS[metric];
-            const value = stats[metric];
-            const [min, max] = config.normalRange;
-            const percentage = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
-            const isOutOfRange = value < min || value > max;
+      <div className="flex-1 overflow-y-auto space-y-4">
+        {DISPLAY_METRICS.map((metric) => {
+          const config = METRIC_CONFIGS[metric];
+          const value = stats[metric];
+          const [min, max] = config.normalRange;
+          const percentage = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+          const isOutOfRange = value < min || value > max;
 
-            return (
-              <div key={metric} className="group">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: config.color }}
-                    />
-                    <span className="text-xs font-semibold text-slate-300">{config.label}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="font-mono text-xs font-bold text-white">
-                      {formatMetricValue(value, metric)}
-                    </span>
-                    <span className="text-xs text-slate-500">{config.unit}</span>
-                  </div>
-                </div>
-                
-                {/* Progress bar */}
-                <div className="h-1.5 bg-lab-800 rounded-full overflow-hidden">
+          return (
+            <div key={metric} className="group">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
                   <div
-                    className={`h-full transition-all duration-300 ${
-                      isOutOfRange
-                        ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                        : 'bg-gradient-accent'
-                    }`}
-                    style={{ width: `${Math.max(5, percentage)}%` }}
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: config.color, boxShadow: `0 0 8px ${config.color}60` }}
                   />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-white transition-colors">{config.label}</span>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="font-mono text-xs font-black text-white tabular-nums tracking-tighter">
+                    {formatMetricValue(value, metric)}
+                  </span>
+                  <span className="text-[9px] text-slate-500 font-bold uppercase">{config.unit}</span>
                 </div>
               </div>
-            );
-          })}
-        </div>
+              
+              {/* Progress bar */}
+              <div className="h-1 bg-white/5 rounded-full overflow-hidden flex gap-0.5">
+                {[...Array(20)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-full flex-1 transition-all duration-500 delay-[${i * 20}ms] ${
+                      i / 20 * 100 <= percentage
+                        ? (isOutOfRange ? 'bg-rose-500' : 'bg-cyber-cyan')
+                        : 'bg-white/5'
+                    } ${isOutOfRange && i / 20 * 100 <= percentage ? 'animate-pulse' : ''}`}
+                    style={{ 
+                      opacity: i / 20 * 100 <= percentage ? 1 : 0.2,
+                      boxShadow: i / 20 * 100 <= percentage ? `0 0 5px ${isOutOfRange ? '#f43f5e' : '#00f2ff'}40` : 'none'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

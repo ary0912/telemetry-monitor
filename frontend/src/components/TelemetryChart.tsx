@@ -56,10 +56,16 @@ export function TelemetryChart({ readings }: Props) {
   };
 
   return (
-    <div className="w-full h-full card flex flex-col p-6">
-      <div className="mb-4">
-        <h2 className="text-lg font-bold text-white mb-1">Telemetry streams</h2>
-        <p className="text-sm text-slate-400">Real-time monitoring ({readings.length} samples)</p>
+    <div className="w-full h-full flex flex-col p-6 animate-scan">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-black text-white glow-text uppercase tracking-widest italic">Grid Telemetry</h2>
+          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Active nodes: {readings.length} / Signal: nominal</p>
+        </div>
+        <div className="flex gap-2">
+          <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-cyber-cyan uppercase tracking-widest">Live Stream</div>
+          <div className="px-3 py-1 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-500 uppercase tracking-widest">60FPS</div>
+        </div>
       </div>
 
       {readings.length === 0 ? (
@@ -106,7 +112,10 @@ export function TelemetryChart({ readings }: Props) {
               tick={{ fill: '#94a3b8' }}
               width={35}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(6, 182, 212, 0.3)', strokeWidth: 1 }} />
+            <Tooltip 
+              content={<CustomTooltip />} 
+              cursor={{ stroke: 'rgba(0, 242, 255, 0.2)', strokeWidth: 2, strokeDasharray: '4 4' }} 
+            />
 
             {/* Temperature */}
             <Line
@@ -190,14 +199,14 @@ export function TelemetryChart({ readings }: Props) {
 
       {/* Legend */}
       {readings.length > 0 && (
-        <div className="mt-4 grid grid-cols-2 gap-3 text-xs pt-4 border-t border-lab-800">
+        <div className="mt-6 grid grid-cols-4 gap-4 text-[10px] pt-6 border-t border-white/5">
           {DISPLAY_METRICS.map((metric) => (
-            <div key={metric} className="flex items-center gap-2.5 px-2 py-1.5 rounded bg-lab-800">
+            <div key={metric} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/2 border border-white/5 hover:border-white/10 transition-colors">
               <div
-                className="w-1 h-3 rounded-full"
-                style={{ backgroundColor: METRIC_CONFIGS[metric].color }}
+                className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.2)]"
+                style={{ backgroundColor: METRIC_CONFIGS[metric].color, boxShadow: `0 0 10px ${METRIC_CONFIGS[metric].color}40` }}
               />
-              <span className="text-slate-300 font-medium">{METRIC_CONFIGS[metric].label}</span>
+              <span className="text-slate-400 font-bold uppercase tracking-widest leading-none">{METRIC_CONFIGS[metric].label}</span>
             </div>
           ))}
         </div>

@@ -1,11 +1,18 @@
 import { useEffect, useRef } from 'react';
-import { useTelemetryStore } from '../store/telemetry';
+import { useAppDispatch, useAppSelector } from '../store';
+import { 
+  addReading, 
+  addAnomaly, 
+  setConnected, 
+  setWsLatency 
+} from '../store/telemetrySlice';
 import { telemetryService } from '../services/websocket';
 import { detectAnomaly } from '../utils/anomalyDetection';
 import { TelemetryReading, WebSocketMessage } from '../types';
 
 export function useTelemetryConnection() {
-  const store = useTelemetryStore();
+  const dispatch = useAppDispatch();
+  const { isPaused, anomalySensitivity, readings } = useAppSelector((state) => state.telemetry);
   const latencyIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -13,7 +20,7 @@ export function useTelemetryConnection() {
     telemetryService.connect().then(
       () => {
         console.log('Connected');
-        store.setConnected(true);
+        dispatch(setConnected(true));
       },
       (err) => {
         console.error('Connection failed:', err);
@@ -24,10 +31,10 @@ export function useTelemetryConnection() {
     const unsubscribe = telemetryService.subscribe((msg: WebSocketMessage) => {
       if (msg.type === 'telemetry' && msg.data) {
         const reading = msg.data as TelemetryReading;
-        store.addReading(reading);
+        dispatch(addReading(reading));
 
         // Check for anomalies on each new reading
-        if (!store.isPaused) {
+        if (!isPaused) {
           const metrics = [
             'temperature',
             'voltage',
@@ -39,9 +46,9 @@ export function useTelemetryConnection() {
           ] as const;
 
           for (const metric of metrics) {
-            const anomaly = detectAnomaly(store.readings, metric, store.anomalySensitivity);
+            const anomaly = detectAnomaly(readings, metric, anomalySensitivity);
             if (anomaly) {
-              store.addAnomaly(anomaly);
+              dispatch(addAnomaly(anomaly));
               telemetryService.sendAnomaly(metric, anomaly.deviation, anomaly.value);
             }
           }
@@ -51,7 +58,7 @@ export function useTelemetryConnection() {
 
     // Update latency periodically
     latencyIntervalRef.current = setInterval(() => {
-      store.setWsLatency(telemetryService.getLatency());
+      dispatch(setWsLatency(telemetryService.getLatency()));
     }, 1000);
 
     return () => {
@@ -61,5 +68,5 @@ export function useTelemetryConnection() {
       }
       telemetryService.disconnect();
     };
-  }, [store]);
+  }, [dispatch, isPaused, anomalySensitivity, readings]);
 }

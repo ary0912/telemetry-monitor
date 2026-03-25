@@ -1,5 +1,11 @@
 import React from 'react';
-import { useTelemetryStore } from '../store/telemetry';
+import { useAppDispatch, useAppSelector } from '../store';
+import { 
+  setIsPaused, 
+  setAnomalySensitivity, 
+  setCalibrationMode, 
+  setSignalNormalization 
+} from '../store/telemetrySlice';
 import {
   PauseIcon,
   PlayIcon,
@@ -7,143 +13,136 @@ import {
   SettingsIcon,
   ZapOffIcon,
   RotateCwIcon,
-  Wifi
+  ShieldCheck,
+  Cpu
 } from 'lucide-react';
 
 export function Sidebar() {
-  const isPaused = useTelemetryStore((s) => s.isPaused);
-  const setIsPaused = useTelemetryStore((s) => s.setIsPaused);
-  const anomalySensitivity = useTelemetryStore((s) => s.anomalySensitivity);
-  const setAnomalySensitivity = useTelemetryStore((s) => s.setAnomalySensitivity);
-  const calibrationMode = useTelemetryStore((s) => s.calibrationMode);
-  const setCalibrationMode = useTelemetryStore((s) => s.setCalibrationMode);
-  const signalNormalization = useTelemetryStore((s) => s.signalNormalizationActive);
-  const setSignalNormalization = useTelemetryStore((s) => s.setSignalNormalization);
-  const connected = useTelemetryStore((s) => s.connected);
+  const dispatch = useAppDispatch();
+  const { 
+    isPaused, 
+    anomalySensitivity, 
+    calibrationMode, 
+    signalNormalizationActive: signalNormalization,
+    connected 
+  } = useAppSelector((state) => state.telemetry);
 
   return (
-    <div className="card flex flex-col overflow-y-auto h-full">
+    <div className="flex flex-col overflow-y-auto h-full space-y-2">
       {/* Stream control */}
-      <div className="p-4 border-b border-lab-800">
+      <div className="p-2">
         <button
-          onClick={() => setIsPaused(!isPaused)}
-          className="w-full btn-primary text-sm"
+          onClick={() => dispatch(setIsPaused(!isPaused))}
+          className="w-full cyber-button flex items-center justify-center gap-3 py-4 text-sm uppercase font-black tracking-widest group"
         >
           {isPaused ? (
             <>
-              <PlayIcon size={16} />
-              Resume
+              <PlayIcon size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+              Resume Core
             </>
           ) : (
             <>
-              <PauseIcon size={16} />
-              Pause
+              <PauseIcon size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+              Suspend Scan
             </>
           )}
         </button>
       </div>
 
       {/* Experiment selector */}
-      <div className="p-4 border-b border-lab-800">
-        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
-          Active experiment
-        </label>
-        <div className="mt-2 flex items-center justify-between px-3 py-2.5 bg-lab-800 hover:bg-lab-700 rounded-lg text-sm text-slate-100 cursor-pointer transition-all duration-200 border border-lab-700 hover:border-lab-600">
-          <span className="font-semibold">EXP-2026-0219</span>
-          <ChevronDownIcon size={16} />
-        </div>
-      </div>
-
-      {/* System status */}
-      <div className="p-4 border-b border-lab-800">
-        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
-          Connection
-        </label>
-        <div className="mt-3 flex items-center gap-3 px-3 py-2.5 rounded-lg bg-lab-800 border border-lab-700">
-          <div
-            className={`w-2.5 h-2.5 rounded-full ${
-              connected ? 'bg-gradient-accent animate-pulse-subtle' : 'bg-slate-600'
-            }`}
-          />
-          <div>
-            <p className="text-xs font-semibold text-slate-300">
-              {connected ? 'Connected' : 'Offline'}
-            </p>
-            <p className="text-xs text-slate-500">
-              {connected ? 'Data streaming' : 'Waiting...'}
-            </p>
+      <div className="px-2">
+        <div className="p-4 glass-card rounded-xl">
+          <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-3 block">
+            Target Workspace
+          </label>
+          <div className="flex items-center justify-between px-3 py-3 bg-white/5 border border-white/5 rounded-lg text-xs text-white font-bold cursor-pointer hover:border-cyber-cyan/30 transition-all group">
+            <div className="flex items-center gap-2">
+              <Cpu size={14} className="text-cyber-cyan" />
+              <span>PRODUCTION_GRID_X</span>
+            </div>
+            <ChevronDownIcon size={14} className="text-slate-500 group-hover:text-cyber-cyan" />
           </div>
         </div>
       </div>
 
       {/* Anomaly sensitivity */}
-      <div className="p-4 border-b border-lab-800">
-        <div className="flex items-center justify-between mb-3">
-          <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide">
-            Sensitivity
-          </label>
-          <span className="text-xs font-mono bg-lab-800 text-cyan-400 px-2 py-1 rounded">
-            {anomalySensitivity.toFixed(1)}σ
-          </span>
+      <div className="px-2">
+        <div className="p-4 glass-card rounded-xl">
+          <div className="flex items-center justify-between mb-4">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
+              AI Threshold
+            </label>
+            <span className="font-mono text-xs font-bold text-cyber-cyan bg-cyber-cyan/10 px-2 py-0.5 rounded border border-cyber-cyan/20">
+              {anomalySensitivity.toFixed(1)}σ
+            </span>
+          </div>
+          <input
+            type="range"
+            min="1.5"
+            max="3.0"
+            step="0.1"
+            value={anomalySensitivity}
+            onChange={(e) => dispatch(setAnomalySensitivity(parseFloat(e.target.value)))}
+            className="w-full accent-cyber-cyan cursor-pointer"
+          />
+          <p className="text-[10px] text-slate-500 mt-3 font-medium leading-relaxed">
+            Adjusting sigma values recalibrates the Active AI detection layer.
+          </p>
         </div>
-        <input
-          type="range"
-          min="1.5"
-          max="3.0"
-          step="0.1"
-          value={anomalySensitivity}
-          onChange={(e) => setAnomalySensitivity(parseFloat(e.target.value))}
-          className="w-full"
-        />
-        <p className="text-xs text-slate-500 mt-2">Adjusts detection threshold</p>
       </div>
 
       {/* Control modes */}
-      <div className="p-4 border-b border-lab-800">
-        <label className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3 block">
-          Modes
-        </label>
-        <div className="space-y-2">
+      <div className="px-2">
+        <div className="p-4 glass-card rounded-xl space-y-3">
+          <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1 block">
+            System Overlays
+          </label>
           <button
-            onClick={() => setCalibrationMode(!calibrationMode)}
-            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+            onClick={() => dispatch(setCalibrationMode(!calibrationMode))}
+            className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
               calibrationMode
-                ? 'bg-lab-700 border-lab-600 text-white shadow-glow'
-                : 'bg-lab-800 border-lab-700 text-slate-300 hover:bg-lab-700'
+                ? 'bg-cyber-cyan/20 border-cyber-cyan text-cyber-cyan shadow-[0_0_15px_rgba(0,242,255,0.2)]'
+                : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20'
             }`}
           >
-            <RotateCwIcon size={14} />
-            Calibration
+            <div className="flex items-center gap-2">
+              <RotateCwIcon size={12} className={calibrationMode ? 'animate-spin-slow' : ''} />
+              Auto-Calibration
+            </div>
+            {calibrationMode && <div className="w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-pulse" />}
           </button>
           <button
-            onClick={() => setSignalNormalization(!signalNormalization)}
-            className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border ${
+            onClick={() => dispatch(setSignalNormalization(!signalNormalization))}
+            className={`w-full flex items-center justify-between px-3 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
               signalNormalization
-                ? 'bg-lab-700 border-lab-600 text-white shadow-glow'
-                : 'bg-lab-800 border-lab-700 text-slate-300 hover:bg-lab-700'
+                ? 'bg-cyber-purple/20 border-cyber-purple text-cyber-purple shadow-[0_0_15px_rgba(157,0,255,0.2)]'
+                : 'bg-white/5 border-white/5 text-slate-400 hover:border-white/20'
             }`}
           >
-            <ZapOffIcon size={14} />
-            Normalization
+            <div className="flex items-center gap-2">
+              <ZapOffIcon size={12} />
+              Normalization
+            </div>
+            {signalNormalization && <div className="w-1.5 h-1.5 rounded-full bg-cyber-purple animate-pulse" />}
           </button>
         </div>
       </div>
 
-      {/* Settings */}
-      <div className="p-4 border-b border-lab-800">
-        <button className="w-full btn-secondary text-sm">
-          <SettingsIcon size={16} />
-          Settings
-        </button>
-      </div>
-
-      {/* Info section */}
-      <div className="p-4 mt-auto">
-        <div className="bg-lab-800 rounded-lg p-3 border border-lab-700">
-          <p className="text-xs font-semibold text-slate-300 mb-2">Tip</p>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            Adjust sensitivity to tune detection. Higher values = fewer alerts.
-          </p>
+      {/* Status section */}
+      <div className="px-2 mt-auto pb-4">
+        <div className="p-4 glass-card rounded-xl border-t-2 border-t-cyber-cyan/30">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-cyber-cyan/10 rounded-lg">
+              <ShieldCheck size={18} className="text-cyber-cyan" />
+            </div>
+            <div>
+              <p className="text-[10px] font-black text-white uppercase tracking-widest">Active Protection</p>
+              <p className="text-[9px] text-slate-500 font-bold uppercase">Grid Status: Verified</p>
+            </div>
+          </div>
+          <button className="w-full bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all">
+            Audit logs
+          </button>
         </div>
       </div>
     </div>
