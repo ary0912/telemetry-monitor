@@ -14,7 +14,12 @@ export class TelemetryWebSocketService {
   private lastPingTime = 0;
 
   constructor(url: string = (import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws')) {
-    this.url = url;
+    // Ensure the URL has the correct path if only the base was provided
+    let finalUrl = url;
+    if (!finalUrl.endsWith('/ws') && !finalUrl.endsWith('/ws/')) {
+      finalUrl = finalUrl.endsWith('/') ? `${finalUrl}ws` : `${finalUrl}/ws`;
+    }
+    this.url = finalUrl;
   }
 
   connect(): Promise<void> {
