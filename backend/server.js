@@ -159,6 +159,17 @@ wss.on('connection', (ws) => {
 });
 
 // REST endpoints
+app.get('/', (req, res) => {
+  res.send(`
+    <div style="font-family: sans-serif; padding: 2rem; color: #0f172a;">
+      <h1>🔬 Telemetry Monitor API</h1>
+      <p>Server is running healthy. WebSocket stream is available at <code>/ws</code>.</p>
+      <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 1rem 0;" />
+      <p>Status: <a href="/api/health" style="color: #00f2ff; font-weight: bold; text-decoration: none;">View Health Metrics</a></p>
+    </div>
+  `);
+});
+
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',

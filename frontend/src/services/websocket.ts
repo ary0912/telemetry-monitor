@@ -13,7 +13,7 @@ export class TelemetryWebSocketService {
   private isIntentionallyClosed = false;
   private lastPingTime = 0;
 
-  constructor(url: string = 'ws://localhost:8080/ws') {
+  constructor(url: string = (import.meta.env.VITE_WS_URL || 'ws://localhost:8080/ws')) {
     this.url = url;
   }
 
