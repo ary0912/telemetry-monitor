@@ -10,28 +10,28 @@ export const METRIC_CONFIGS = {
     label: 'Voltage',
     unit: 'V',
     thresholdZScore: 2.0,
-    color: '#f59e0b',
+    color: '#fbbf24',
     normalRange: [4.8, 5.2] as [number, number]
   },
   signalNoise: {
     label: 'Signal Noise',
     unit: 'μV',
     thresholdZScore: 2.0,
-    color: '#8b5cf6',
+    color: '#818cf8',
     normalRange: [0.1, 0.2] as [number, number]
   },
   laserStability: {
     label: 'Laser Stability',
     unit: '%',
     thresholdZScore: 2.0,
-    color: '#06b6d4',
+    color: '#38bdf8',
     normalRange: [97.5, 99.5] as [number, number]
   },
   controlSignalDrift: {
     label: 'Control Signal Drift',
     unit: 'rad',
     thresholdZScore: 2.0,
-    color: '#ec4899',
+    color: '#f472b6',
     normalRange: [0.05, 0.11] as [number, number]
   },
   errorRate: {

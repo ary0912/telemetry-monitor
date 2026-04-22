@@ -12,61 +12,72 @@ export function ExperimentHeader() {
   const throughput = formatDataThroughput(messageCount, runtime);
 
   return (
-    <div className="border-b border-white/5 bg-surface/80 backdrop-blur-md px-8 py-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-10">
+    <header className="border-b border-white/5 bg-slate-950/50 backdrop-blur-xl px-6 lg:px-10 py-4 lg:py-6 sticky top-0 z-50">
+      <div className="flex flex-col sm:flex-row items-center justify-between max-w-[2400px] mx-auto gap-6 sm:gap-0">
+        <div className="flex items-center gap-4 lg:gap-16 w-full sm:w-auto justify-between sm:justify-start">
           {/* Logo and title */}
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyber-cyan to-cyber-purple flex items-center justify-center relative group">
-              <div className="absolute inset-0 bg-cyber-cyan blur-md opacity-20 group-hover:opacity-40 transition-opacity" />
-              <Zap className="text-deep relative z-10" size={24} strokeWidth={2.5} />
+          <div className="flex items-center gap-3 lg:gap-5">
+            <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center relative group overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyber-cyan/20 to-cyber-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <Zap className="text-white relative z-10 group-hover:scale-110 transition-transform duration-500" size={18} lg:size={24} strokeWidth={1.5} />
             </div>
             <div>
-              <h1 className="text-2xl font-black tracking-tighter text-white glow-text italic">CYBER-GRID // CG-9</h1>
-              <p className="text-[10px] text-cyber-cyan font-bold uppercase tracking-[0.2em] opacity-80">Autonomous Threat Detection</p>
+              <h1 className="text-lg lg:text-2xl font-black tracking-[0.1em] text-white italic group whitespace-nowrap">
+                AETHER <span className="text-slate-500 group-hover:text-cyber-cyan transition-colors duration-500">OPS //</span> CG-9
+              </h1>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="w-1 h-1 rounded-full bg-cyber-cyan animate-pulse" />
+                <p className="text-[8px] lg:text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em]">Autonomous Neural Monitoring</p>
+              </div>
             </div>
           </div>
 
-          {/* Metrics */}
-          <div className="flex gap-6">
+          {/* Metrics - Hidden on very small mobile, visible from small screens up */}
+          <div className="hidden sm:flex gap-6 lg:gap-10">
             {/* Runtime */}
-            <div className="flex flex-col px-4 py-1 border-l border-white/10">
-              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Session Time</span>
-              <div className="flex items-center gap-2">
-                <Activity size={14} className="text-cyber-cyan" />
-                <span className="font-mono text-lg text-white font-medium">{formatDuration(runtime)}</span>
+            <div className="hidden lg:block space-y-1.5 border-l border-white/5 pl-8">
+              <span className="label-caps !text-[9px]">Uptime</span>
+              <div className="flex items-center gap-3">
+                <Activity size={14} className="text-cyber-cyan opacity-50" />
+                <span className="font-mono text-base lg:text-xl text-white font-black tabular-nums">{formatDuration(runtime)}</span>
               </div>
             </div>
 
             {/* Throughput */}
-            <div className="flex flex-col px-4 py-1 border-l border-white/10">
-              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Data Rate</span>
-              <div className="flex items-center gap-2">
-                <Radio size={14} className="text-cyber-purple" />
-                <span className="font-mono text-lg text-white font-medium uppercase">{throughput}</span>
+            <div className="hidden md:block space-y-1.5 border-l border-white/5 pl-4 lg:pl-8">
+              <span className="label-caps !text-[9px]">Throughput</span>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <Radio size={14} className="text-cyber-purple opacity-50" />
+                <span className="font-mono text-base lg:text-xl text-white font-black tabular-nums uppercase">{throughput}</span>
               </div>
             </div>
 
             {/* Signal Integrity */}
-            <div className="flex flex-col px-4 py-1 border-l border-white/10">
-              <span className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mb-1">Signal Trust</span>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-cyber-cyan shadow-[0_0_8px_rgba(0,242,255,0.8)]" />
-                <span className="font-mono text-lg text-white font-medium">{signalIntegrity.toFixed(1)}%</span>
+            <div className="space-y-1.5 border-l border-white/5 pl-4 lg:pl-8">
+              <span className="label-caps !text-[9px]">Accuracy</span>
+              <div className="flex items-center gap-2 lg:gap-3">
+                <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
+                <span className="font-mono text-base lg:text-xl text-white font-black tabular-nums">{signalIntegrity.toFixed(1)}%</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Status indicator */}
-        <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-6 py-2.5 rounded-full hover:bg-white/10 transition-colors cursor-default">
-          <div className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-cyber-cyan animate-pulse' : 'bg-slate-600'} shadow-[0_0_8px_rgba(0,242,255,0.5)]`} />
-          <span className="text-xs font-bold uppercase tracking-widest text-slate-300">
-            {connected ? 'Syncing Nodes' : 'Searching...'}
-          </span>
-          <Globe size={16} className="text-slate-500" />
+        <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 px-4 lg:px-8 py-2 lg:py-3 rounded-xl lg:rounded-2xl hover:border-white/10 transition-all group w-full sm:w-auto">
+          <div className="text-right flex-1 sm:flex-none">
+            <p className="text-[7px] lg:text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Network Status</p>
+            <p className="text-[9px] lg:text-[11px] font-black uppercase tracking-widest text-white">
+              {connected ? 'Operational' : 'Establishing...'}
+            </p>
+          </div>
+          <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center transition-all duration-500 ${
+            connected ? 'bg-cyber-cyan/10 text-cyber-cyan border-cyber-cyan/20' : 'bg-white/5 text-slate-500 border-white/5'
+          } border`}>
+            <Globe size={16} lg:size={20} className={connected ? 'animate-pulse' : ''} />
+          </div>
         </div>
       </div>
-    </div>
+    </header>
   );
 }

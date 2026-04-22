@@ -1,17 +1,25 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cyber-cyan: #00f2ff;
-  --color-cyber-purple: #9d00ff;
-  --color-cyber-pink: #ff00c8;
-  --color-bg-deep: #020617;
-  --color-bg-surface: #0f172a;
-  --color-bg-subtle: #1e293b;
-  --color-text-primary: #f1f5f9;
-  --color-text-secondary: #94a3b8;
+  --color-cyber-cyan: #38bdf8;
+  --color-cyber-purple: #818cf8;
+  --color-cyber-pink: #f472b6;
+  --color-cyber-amber: #fbbf24;
+  --color-cyber-red: #ef4444;
   
-  --font-space: 'Space Grotesk', system-ui, sans-serif;
+  --color-bg-deep: #05070a;
+  --color-bg-surface: #0a0f16;
+  --color-bg-subtle: #111827;
+  
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #475569;
+  
+  --font-space: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  --shadow-premium: 0 0 20px 0 rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 15px rgba(56, 189, 248, 0.2);
 }
 
 @layer base {
@@ -21,7 +29,7 @@
   }
 
   body {
-    @apply bg-[var(--color-bg-deep)] text-[var(--color-text-primary)] font-space overflow-hidden;
+    @apply bg-[var(--color-bg-deep)] text-[var(--color-text-primary)] font-space overflow-x-hidden selection:bg-cyan-500/30;
   }
 
   code, pre {
@@ -31,28 +39,34 @@
 
 @layer components {
   .glass-card {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-white/5 shadow-2xl transition-all duration-300;
+    @apply bg-slate-900/40 backdrop-blur-md border border-white/5 shadow-premium transition-all duration-500;
   }
 
   .glass-card:hover {
-    @apply border-cyan-500/20 shadow-cyan-500/10;
+    @apply border-white/10 bg-slate-900/50;
   }
 
   .cyber-button {
-    @apply relative overflow-hidden px-6 py-2 rounded-md font-semibold transition-all duration-300 border border-cyan-500/30 text-cyan-400 bg-gradient-to-br from-cyan-500/10 to-purple-500/10;
+    @apply relative overflow-hidden px-4 py-2 rounded-lg font-bold transition-all duration-300 border border-white/10 text-slate-300 bg-white/5 hover:bg-white/10 hover:text-white hover:border-white/20;
   }
 
-  .cyber-button:hover {
-    @apply -translate-y-0.5 border-cyan-400 bg-gradient-to-br from-cyan-500/20 to-purple-500/20 shadow-[0_0_20px_rgba(0,242,255,0.3)];
+  .cyber-button-primary {
+    @apply relative overflow-hidden px-4 py-2 rounded-lg font-bold transition-all duration-300 border border-cyan-500/30 text-cyan-400 bg-cyan-500/5 hover:bg-cyan-500/10 hover:border-cyan-500/50 hover:shadow-glow;
   }
 
   .cyber-grid {
-    background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
-    background-size: 24px 24px;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
   }
 
   .glow-text {
-    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+    text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+  }
+
+  .label-caps {
+    @apply text-[10px] font-black uppercase tracking-[0.2em] text-slate-500;
   }
 
   .animate-scan {
@@ -62,8 +76,8 @@
   .animate-scan::after {
     content: '';
     @apply absolute top-0 -left-full w-full h-full;
-    background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.1), transparent);
-    animation: scan 3s infinite linear;
+    background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.05), transparent);
+    animation: scan 4s infinite linear;
   }
 }
 
@@ -71,12 +85,13 @@
   to { left: 100%; }
 }
 
-/* Custom Scrollbar for Dashboard */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { @apply bg-[var(--color-bg-deep)]; }
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { @apply bg-transparent; }
 ::-webkit-scrollbar-thumb {
-  @apply bg-[var(--color-bg-subtle)] rounded-full;
+  @apply bg-slate-800 rounded-full transition-colors;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-cyan-400;
+  @apply bg-cyan-500/50;
 }
+

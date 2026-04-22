@@ -6,41 +6,82 @@ import { TelemetryChart } from './TelemetryChart';
 import { AnomalyFeed } from './AnomalyFeed';
 import { SystemStats } from './SystemStats';
 import { Footer } from './Footer';
+import { WelcomeModal } from './WelcomeModal';
 
 export function Dashboard() {
   const { readings, anomalies } = useAppSelector((state) => state.telemetry);
+  const [activeTab, setActiveTab] = React.useState<'chart' | 'anomalies' | 'stats'>('chart');
 
   return (
-    <div className="min-h-screen bg-deep text-slate-100 flex flex-col cyber-grid">
+    <div className="min-h-screen bg-[var(--color-bg-deep)] text-slate-100 flex flex-col cyber-grid selection:bg-cyan-500/30">
+      <WelcomeModal />
       {/* Header */}
       <ExperimentHeader />
 
-      {/* Main layout: sidebar + content + right panel */}
-      <div className="flex flex-1 overflow-hidden gap-6 p-6">
-        {/* Sidebar */}
-        <div className="w-72 flex-shrink-0">
+      {/* Mobile Tab Switcher */}
+      <div className="lg:hidden flex border-b border-white/5 bg-slate-900/50 backdrop-blur-md sticky top-0 z-40">
+        <button 
+          onClick={() => setActiveTab('chart')}
+          className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${activeTab === 'chart' ? 'text-cyber-cyan border-b-2 border-cyber-cyan' : 'text-slate-500'}`}
+        >
+          Telemetry
+        </button>
+        <button 
+          onClick={() => setActiveTab('anomalies')}
+          className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${activeTab === 'anomalies' ? 'text-cyber-cyan border-b-2 border-cyber-cyan' : 'text-slate-500'}`}
+        >
+          Anomalies ({anomalies.length})
+        </button>
+        <button 
+          onClick={() => setActiveTab('stats')}
+          className={`flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${activeTab === 'stats' ? 'text-cyber-cyan border-b-2 border-cyber-cyan' : 'text-slate-500'}`}
+        >
+          Metrics
+        </button>
+      </div>
+
+      {/* Main layout */}
+      <main className="flex flex-col lg:flex-row flex-1 overflow-x-hidden lg:overflow-hidden p-4 lg:p-8 gap-6 lg:gap-8">
+        
+        {/* Sidebar - Hidden on mobile, visible in Metrics tab or on Desktop */}
+        <aside className={`${activeTab === 'stats' ? 'flex' : 'hidden'} lg:flex w-full lg:w-80 flex-shrink-0 flex-col`}>
           <Sidebar />
-        </div>
+        </aside>
 
         {/* Central chart area */}
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <div className="flex-1 overflow-hidden glass-card rounded-xl">
+        <section className={`${activeTab === 'chart' ? 'flex' : 'hidden'} lg:flex flex-1 flex-col overflow-hidden min-w-0 min-h-[400px] lg:min-h-0`}>
+          <div className="flex-1 overflow-hidden glass-card rounded-2xl animate-scan">
             <TelemetryChart readings={readings} />
           </div>
-        </div>
+        </section>
 
         {/* Right panel: anomalies + stats */}
-        <div className="w-96 flex-shrink-0 flex flex-col gap-6 overflow-hidden">
-          <div className="flex-1 glass-card overflow-y-auto rounded-xl p-4">
-            <h3 className="text-sm font-bold text-cyber-cyan mb-4 uppercase tracking-widest glow-text">Anomaly Detection</h3>
-            <AnomalyFeed anomalies={anomalies} />
+        <aside className={`${activeTab === 'anomalies' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[400px] flex-shrink-0 flex-col gap-6 lg:gap-8`}>
+          <div className="flex-1 glass-card overflow-hidden rounded-2xl flex flex-col min-h-[400px] lg:min-h-0">
+            <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+              <h3 className="label-caps glow-text flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyber-cyan animate-pulse" />
+                Anomaly Detection
+              </h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <AnomalyFeed anomalies={anomalies} />
+            </div>
           </div>
-          <div className="glass-card overflow-y-auto rounded-xl p-4">
-            <h3 className="text-sm font-bold text-cyber-cyan mb-4 uppercase tracking-widest glow-text">System Metrics</h3>
-            <SystemStats readings={readings} />
+          
+          <div className={`${activeTab === 'stats' ? 'flex' : 'hidden'} lg:flex h-[300px] glass-card overflow-hidden rounded-2xl flex flex-col`}>
+            <div className="p-6 border-b border-white/5 bg-white/[0.02]">
+              <h3 className="label-caps glow-text flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyber-purple animate-pulse" />
+                System Metrics
+              </h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <SystemStats readings={readings} />
+            </div>
           </div>
-        </div>
-      </div>
+        </aside>
+      </main>
 
       {/* Footer */}
       <Footer />

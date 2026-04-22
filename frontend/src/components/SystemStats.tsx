@@ -31,9 +31,8 @@ export function SystemStats({ readings }: Props) {
   }, [readings]);
 
   return (
-    <div className="flex flex-col h-full bg-deep">
-
-      <div className="flex-1 overflow-y-auto space-y-4">
+    <div className="flex flex-col h-full bg-transparent">
+      <div className="flex-1 overflow-y-auto space-y-6 pr-1">
         {DISPLAY_METRICS.map((metric) => {
           const config = METRIC_CONFIGS[metric];
           const value = stats[metric];
@@ -42,39 +41,47 @@ export function SystemStats({ readings }: Props) {
           const isOutOfRange = value < min || value > max;
 
           return (
-            <div key={metric} className="group">
-              <div className="flex items-center justify-between mb-2">
+            <div key={metric} className="group space-y-3">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ backgroundColor: config.color, boxShadow: `0 0 8px ${config.color}60` }}
+                    className="w-1.5 h-1.5 rounded-full transition-shadow duration-500"
+                    style={{ 
+                      backgroundColor: isOutOfRange ? 'var(--color-cyber-red)' : config.color, 
+                      boxShadow: `0 0 10px ${isOutOfRange ? 'var(--color-cyber-red)' : config.color}40` 
+                    }}
                   />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest group-hover:text-white transition-colors">{config.label}</span>
+                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] group-hover:text-slate-300 transition-colors">{config.label}</span>
                 </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="font-mono text-xs font-black text-white tabular-nums tracking-tighter">
+                <div className="flex items-baseline gap-1.5">
+                  <span className={`font-mono text-sm font-black tabular-nums tracking-tighter ${isOutOfRange ? 'text-rose-500' : 'text-white'}`}>
                     {formatMetricValue(value, metric)}
                   </span>
-                  <span className="text-[9px] text-slate-500 font-bold uppercase">{config.unit}</span>
+                  <span className="text-[9px] text-slate-600 font-bold uppercase">{config.unit}</span>
                 </div>
               </div>
               
-              {/* Progress bar */}
-              <div className="h-1 bg-white/5 rounded-full overflow-hidden flex gap-0.5">
-                {[...Array(20)].map((_, i) => (
-                  <div
-                    key={i}
-                    className={`h-full flex-1 transition-all duration-500 delay-[${i * 20}ms] ${
-                      i / 20 * 100 <= percentage
-                        ? (isOutOfRange ? 'bg-rose-500' : 'bg-cyber-cyan')
-                        : 'bg-white/5'
-                    } ${isOutOfRange && i / 20 * 100 <= percentage ? 'animate-pulse' : ''}`}
-                    style={{ 
-                      opacity: i / 20 * 100 <= percentage ? 1 : 0.2,
-                      boxShadow: i / 20 * 100 <= percentage ? `0 0 5px ${isOutOfRange ? '#f43f5e' : '#00f2ff'}40` : 'none'
-                    }}
-                  />
-                ))}
+              {/* Segmented Progress Bar */}
+              <div className="flex gap-1 h-1.5 w-full">
+                {[...Array(24)].map((_, i) => {
+                  const segmentLimit = (i / 23) * 100;
+                  const isActive = segmentLimit <= percentage;
+                  
+                  return (
+                    <div
+                      key={i}
+                      className={`h-full flex-1 rounded-sm transition-all duration-300 ${
+                        isActive
+                          ? (isOutOfRange ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' : `bg-white opacity-40 shadow-[0_0_8px_rgba(255,255,255,0.2)]`)
+                          : 'bg-white/5'
+                      }`}
+                      style={{ 
+                        backgroundColor: isActive && !isOutOfRange ? config.color : undefined,
+                        opacity: isActive ? 1 : 0.1,
+                      }}
+                    />
+                  );
+                })}
               </div>
             </div>
           );
