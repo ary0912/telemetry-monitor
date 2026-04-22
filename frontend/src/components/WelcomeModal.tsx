@@ -25,7 +25,7 @@ export function WelcomeModal() {
         <div className="h-32 lg:h-40 bg-gradient-to-br from-cyber-cyan/10 via-cyber-purple/5 to-transparent relative flex flex-col items-center justify-center border-b border-white/5 shrink-0">
           <div className="absolute inset-0 cyber-grid opacity-20" />
           <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center relative group overflow-hidden mb-3 lg:mb-4">
-            <Zap className="text-cyber-cyan group-hover:scale-110 transition-transform duration-500" size={24} lg:size={28} strokeWidth={1.5} />
+            <Zap className="text-cyber-cyan group-hover:scale-110 transition-transform duration-500 w-6 h-6 lg:w-7 lg:h-7" strokeWidth={1.5} />
           </div>
           <h2 className="label-caps glow-text !text-cyber-cyan !text-[10px] lg:!text-[12px]">PROTOCOL INITIALIZATION</h2>
         </div>
@@ -80,7 +80,7 @@ export function WelcomeModal() {
           onClick={handleClose}
           className="absolute top-4 lg:top-6 right-4 lg:right-6 p-2 text-slate-500 hover:text-white transition-colors"
         >
-          <X size={18} lg:size={20} />
+          <X className="w-4.5 h-4.5 lg:w-5 lg:h-5" />
         </button>
       </div>
     </div>

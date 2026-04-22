@@ -19,7 +19,7 @@ export function ExperimentHeader() {
           <div className="flex items-center gap-3 lg:gap-5">
             <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center relative group overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-cyber-cyan/20 to-cyber-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <Zap className="text-white relative z-10 group-hover:scale-110 transition-transform duration-500" size={18} lg:size={24} strokeWidth={1.5} />
+              <Zap className="text-white relative z-10 group-hover:scale-110 transition-transform duration-500 w-[18px] h-[18px] lg:w-[24px] lg:h-[24px]" strokeWidth={1.5} />
             </div>
             <div>
               <h1 className="text-lg lg:text-2xl font-black tracking-[0.1em] text-white italic group whitespace-nowrap">
@@ -74,7 +74,7 @@ export function ExperimentHeader() {
           <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center transition-all duration-500 ${
             connected ? 'bg-cyber-cyan/10 text-cyber-cyan border-cyber-cyan/20' : 'bg-white/5 text-slate-500 border-white/5'
           } border`}>
-            <Globe size={16} lg:size={20} className={connected ? 'animate-pulse' : ''} />
+            <Globe className={`w-4 h-4 lg:w-5 lg:h-5 ${connected ? 'animate-pulse' : ''}`} />
           </div>
         </div>
       </div>
