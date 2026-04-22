@@ -33,12 +33,21 @@ export function WelcomeModal() {
         {/* Content */}
         <div className="p-6 lg:p-10 space-y-6 lg:space-y-8">
           <div className="space-y-3 lg:space-y-4">
-            <h3 className="text-xl lg:text-2xl font-black text-white italic tracking-tight">WELCOME TO AETHER OPS</h3>
-            <p className="text-xs lg:text-sm text-slate-400 leading-relaxed font-medium">
-              Aether Monitor is an advanced telemetry platform designed for high-precision autonomous neural monitoring. 
-              This interface provides real-time visibility into the synthetic lattice, with integrated AI layers for 
-              instantaneous anomaly detection and signal verification.
-            </p>
+            <h3 className="text-xl lg:text-2xl font-black text-white italic tracking-tight uppercase">Mission Briefing</h3>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-cyber-cyan/5 border border-cyber-cyan/20">
+                <p className="text-[10px] font-black text-cyber-cyan uppercase tracking-widest mb-1">The Problem</p>
+                <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
+                  High-density neural lattices suffer from <span className="text-white font-bold">synthetic drift</span>—unpredictable signal fluctuations that compromises grid stability and data integrity.
+                </p>
+              </div>
+              <div className="p-4 rounded-xl bg-cyber-purple/5 border border-cyber-purple/20">
+                <p className="text-[10px] font-black text-cyber-purple uppercase tracking-widest mb-1">The Solution</p>
+                <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
+                  Aether Ops utilizes an <span className="text-white font-bold">adaptive Z-score engine</span> to monitor 8+ telemetry vectors in real-time, instantly isolating drift anomalies before they cascade.
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-3 lg:gap-4">
@@ -48,7 +57,7 @@ export function WelcomeModal() {
               </div>
               <div>
                 <p className="text-[10px] lg:text-xs font-black text-white uppercase tracking-wider mb-1">Live Grid Telemetry</p>
-                <p className="text-[10px] lg:text-[11px] text-slate-500 font-medium">Real-time stream of synthetic data points across all active nodes.</p>
+                <p className="text-[10px] lg:text-[11px] text-slate-500 font-medium">Full-spectrum visibility into the neural lattice with sub-10ms latency.</p>
               </div>
             </div>
             
@@ -57,8 +66,8 @@ export function WelcomeModal() {
                 <Shield size={18} className="text-cyber-purple" />
               </div>
               <div>
-                <p className="text-[10px] lg:text-xs font-black text-white uppercase tracking-wider mb-1">Anomaly Detection</p>
-                <p className="text-[10px] lg:text-[11px] text-slate-500 font-medium">Z-score powered AI layer identifying deviations beyond 2.0σ in real-time.</p>
+                <p className="text-[10px] lg:text-xs font-black text-white uppercase tracking-wider mb-1">AI Mitigation</p>
+                <p className="text-[10px] lg:text-[11px] text-slate-500 font-medium">Active neutralization of signal deviations beyond 2.0σ in real-time.</p>
               </div>
             </div>
           </div>
