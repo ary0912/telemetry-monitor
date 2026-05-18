@@ -1,83 +1,300 @@
-import React from 'react';
+import {
+  Activity,
+  Globe,
+  Radio,
+  ShieldCheck,
+  Zap
+} from 'lucide-react';
+
 import { useAppSelector } from '../store';
-import { formatDuration, formatDataThroughput } from '../utils/formatting';
-import { Activity, Zap, Radio, Globe } from 'lucide-react';
+
+import {
+  formatDataThroughput,
+  formatDuration
+} from '../utils/formatting';
+
+/* ========================================================= */
+/* HEADER */
+/* ========================================================= */
 
 export function ExperimentHeader() {
-  const { readings, messageCount, connected } = useAppSelector((state) => state.telemetry);
+  const {
+    readings,
+    messageCount,
+    connected
+  } = useAppSelector(
+    (state) => state.telemetry
+  );
 
-  const lastReading = readings[readings.length - 1];
-  const runtime = lastReading ? lastReading.systemUptime : 0;
-  const signalIntegrity = lastReading ? lastReading.signalIntegrity : 100;
-  const throughput = formatDataThroughput(messageCount, runtime);
+  /* ========================================================= */
+  /* DATA */
+  /* ========================================================= */
+
+  const lastReading =
+    readings[readings.length - 1];
+
+  const runtime = lastReading
+    ? lastReading.systemUptime
+    : 0;
+
+  const signalIntegrity = lastReading
+    ? lastReading.signalIntegrity
+    : 100;
+
+  const throughput = formatDataThroughput(
+    messageCount,
+    runtime
+  );
+
+  /* ========================================================= */
+  /* UI */
+  /* ========================================================= */
 
   return (
-    <header className="border-b border-white/5 bg-slate-950/50 backdrop-blur-xl px-6 lg:px-10 py-4 lg:py-6 sticky top-0 z-50">
-      <div className="flex flex-col sm:flex-row items-center justify-between max-w-[2400px] mx-auto gap-6 sm:gap-0">
-        <div className="flex items-center gap-4 lg:gap-16 w-full sm:w-auto justify-between sm:justify-start">
-          {/* Logo and title */}
-          <div className="flex items-center gap-3 lg:gap-5">
-            <div className="w-10 h-10 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-center relative group overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyber-cyan/20 to-cyber-purple/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <Zap className="text-white relative z-10 group-hover:scale-110 transition-transform duration-500 w-[18px] h-[18px] lg:w-[24px] lg:h-[24px]" strokeWidth={1.5} />
-            </div>
-            <div>
-              <h1 className="text-lg lg:text-2xl font-black tracking-[0.1em] text-white italic group whitespace-nowrap">
-                AETHER <span className="text-slate-500 group-hover:text-cyber-cyan transition-colors duration-500">OPS //</span> CG-9
-              </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="w-1 h-1 rounded-full bg-cyber-cyan animate-pulse" />
-                <p className="text-[8px] lg:text-[9px] text-slate-500 font-bold uppercase tracking-[0.25em]">Autonomous Neural Monitoring</p>
-              </div>
-            </div>
+    <header
+      className="
+        sticky top-0 z-50
+        border-b border-white/5
+        bg-black/20
+        backdrop-blur-md
+      "
+    >
+      <div
+        className="
+          mx-auto flex max-w-[2200px]
+          flex-col gap-5
+          px-5 py-5
+
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
+          lg:px-10
+        "
+      >
+        {/* ========================================================= */}
+        {/* LEFT */}
+        {/* ========================================================= */}
+
+        <div className="flex items-center gap-5">
+          {/* LOGO */}
+
+          <div
+            className="
+              relative flex h-12 w-12 shrink-0
+              items-center justify-center
+              overflow-hidden rounded-2xl
+              border border-white/6
+              bg-white/3
+            "
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-blue-500/10" />
+
+            <Zap
+              className="
+                relative z-10
+                h-5 w-5
+                text-cyan-300
+              "
+              strokeWidth={1.8}
+            />
           </div>
 
-          {/* Metrics - Hidden on very small mobile, visible from small screens up */}
-          <div className="hidden sm:flex gap-6 lg:gap-10">
-            {/* Runtime */}
-            <div className="hidden lg:block space-y-1.5 border-l border-white/5 pl-8">
-              <span className="label-caps !text-[9px]">Uptime</span>
-              <div className="flex items-center gap-3">
-                <Activity size={14} className="text-cyber-cyan opacity-50" />
-                <span className="font-mono text-base lg:text-xl text-white font-black tabular-nums">{formatDuration(runtime)}</span>
-              </div>
+          {/* TITLE */}
+
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-400" />
+
+              <p className="text-[10px] uppercase tracking-[0.18em] text-white/35">
+                telemetry infrastructure
+              </p>
             </div>
 
-            {/* Throughput */}
-            <div className="hidden md:block space-y-1.5 border-l border-white/5 pl-4 lg:pl-8">
-              <span className="label-caps !text-[9px]">Throughput</span>
-              <div className="flex items-center gap-2 lg:gap-3">
-                <Radio size={14} className="text-cyber-purple opacity-50" />
-                <span className="font-mono text-base lg:text-xl text-white font-black tabular-nums uppercase">{throughput}</span>
-              </div>
-            </div>
+            <h1
+              className="
+                mt-2
+                text-[1.6rem]
+                font-semibold
+                tracking-[-0.03em]
 
-            {/* Signal Integrity */}
-            <div className="space-y-1.5 border-l border-white/5 pl-4 lg:pl-8">
-              <span className="label-caps !text-[9px]">Accuracy</span>
-              <div className="flex items-center gap-2 lg:gap-3">
-                <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
-                <span className="font-mono text-base lg:text-xl text-white font-black tabular-nums">{signalIntegrity.toFixed(1)}%</span>
-              </div>
-            </div>
+                sm:text-[2rem]
+              "
+            >
+              Operational observability
+            </h1>
           </div>
         </div>
 
-        {/* Status indicator */}
-        <div className="flex items-center gap-4 bg-white/[0.03] border border-white/5 px-4 lg:px-8 py-2 lg:py-3 rounded-xl lg:rounded-2xl hover:border-white/10 transition-all group w-full sm:w-auto">
-          <div className="text-right flex-1 sm:flex-none">
-            <p className="text-[7px] lg:text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Network Status</p>
-            <p className="text-[9px] lg:text-[11px] font-black uppercase tracking-widest text-white">
-              {connected ? 'Operational' : 'Establishing...'}
-            </p>
-          </div>
-          <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center transition-all duration-500 ${
-            connected ? 'bg-cyber-cyan/10 text-cyber-cyan border-cyber-cyan/20' : 'bg-white/5 text-slate-500 border-white/5'
-          } border`}>
-            <Globe className={`w-4 h-4 lg:w-5 lg:h-5 ${connected ? 'animate-pulse' : ''}`} />
-          </div>
+        {/* ========================================================= */}
+        {/* RIGHT */}
+        {/* ========================================================= */}
+
+        <div
+          className="
+            grid w-full gap-3
+
+            sm:grid-cols-2
+            xl:flex xl:w-auto
+          "
+        >
+          <MinimalStat
+            icon={
+              <Activity className="h-4 w-4" />
+            }
+            label="Runtime"
+            value={formatDuration(runtime)}
+          />
+
+          <MinimalStat
+            icon={<Radio className="h-4 w-4" />}
+            label="Throughput"
+            value={throughput}
+          />
+
+          <MinimalStat
+            icon={
+              <ShieldCheck className="h-4 w-4" />
+            }
+            label="Signal integrity"
+            value={`${signalIntegrity.toFixed(
+              1
+            )}%`}
+          />
+
+          <ConnectionStatus
+            connected={connected}
+          />
         </div>
       </div>
     </header>
+  );
+}
+
+/* ========================================================= */
+/* MINIMAL STAT */
+/* ========================================================= */
+
+function MinimalStat({
+  icon,
+  label,
+  value
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div
+      className="
+        flex items-center gap-3
+        rounded-2xl
+        border border-white/5
+        bg-white/2
+        px-4 py-3
+        transition-colors duration-200
+
+        hover:bg-white/3
+      "
+    >
+      <div
+        className="
+          flex h-10 w-10 shrink-0
+          items-center justify-center
+          rounded-xl
+          bg-cyan-500/10
+          text-cyan-300
+        "
+      >
+        {icon}
+      </div>
+
+      <div className="min-w-0">
+        <p className="text-[10px] uppercase tracking-[0.16em] text-white/30">
+          {label}
+        </p>
+
+        <p
+          className="
+            mt-1
+            truncate
+            text-sm font-medium
+            text-white/90
+          "
+        >
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ========================================================= */
+/* CONNECTION STATUS */
+/* ========================================================= */
+
+function ConnectionStatus({
+  connected
+}: {
+  connected: boolean;
+}) {
+  return (
+    <div
+      className={`
+        flex items-center gap-3
+        rounded-2xl border
+        px-4 py-3
+        transition-colors duration-200
+
+        ${
+          connected
+            ? 'border-emerald-500/10 bg-emerald-500/5'
+            : 'border-red-500/10 bg-red-500/5'
+        }
+      `}
+    >
+      <div
+        className={`
+          flex h-10 w-10 shrink-0
+          items-center justify-center
+          rounded-xl
+
+          ${
+            connected
+              ? 'bg-emerald-500/10 text-emerald-300'
+              : 'bg-red-500/10 text-red-300'
+          }
+        `}
+      >
+        <Globe
+          className={`h-4 w-4 ${
+            connected
+              ? 'animate-pulse'
+              : ''
+          }`}
+        />
+      </div>
+
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.16em] text-white/30">
+          Network
+        </p>
+
+        <p
+          className={`
+            mt-1 text-sm font-medium
+
+            ${
+              connected
+                ? 'text-emerald-300'
+                : 'text-red-300'
+            }
+          `}
+        >
+          {connected
+            ? 'Operational'
+            : 'Offline'}
+        </p>
+      </div>
+    </div>
   );
 }

@@ -1,76 +1,331 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+
+import {
+  Activity,
+  Clock3,
+  Database,
+  Signal,
+  Wifi,
+  WifiOff
+} from 'lucide-react';
+
+import { motion } from 'framer-motion';
+
 import { useAppSelector } from '../store';
-import { Wifi, Clock, Signal, Database, Activity } from 'lucide-react';
+
+/* ========================================================= */
+/* FOOTER */
+/* ========================================================= */
 
 export function Footer() {
-  const { wsLatency, messageCount, readings, connected } = useAppSelector((state) => state.telemetry);
-  const [streamingFreq, setStreamingFreq] = useState('0.0 Hz');
+  const {
+    wsLatency,
+    messageCount,
+    readings,
+    connected
+  } = useAppSelector(
+    (state) => state.telemetry
+  );
+
+  const [streamingFreq, setStreamingFreq] =
+    useState('0.0 Hz');
+
+  /* ========================================================= */
+  /* STREAM FREQUENCY */
+  /* ========================================================= */
 
   useEffect(() => {
     if (readings.length < 2) return;
 
-    const recentReadings = readings.slice(-10);
+    const recentReadings =
+      readings.slice(-12);
+
     if (recentReadings.length < 2) return;
 
-    const timeSpanMs =
-      recentReadings[recentReadings.length - 1].timestamp - recentReadings[0].timestamp;
-    if (timeSpanMs === 0) return;
+    const first =
+      recentReadings[0].timestamp;
 
-    const freq = (recentReadings.length / timeSpanMs) * 1000;
-    setStreamingFreq(`${freq.toFixed(1)} Hz`);
+    const last =
+      recentReadings[
+        recentReadings.length - 1
+      ].timestamp;
+
+    const duration =
+      last - first;
+
+    if (duration <= 0) return;
+
+    const frequency =
+      (recentReadings.length /
+        duration) *
+      1000;
+
+    setStreamingFreq(
+      `${frequency.toFixed(1)} Hz`
+    );
   }, [readings]);
 
+  /* ========================================================= */
+  /* STATUS */
+  /* ========================================================= */
+
+  const networkStatus = useMemo(() => {
+    if (!connected) {
+      return {
+        label: 'Offline',
+        icon: WifiOff,
+        dot: 'bg-rose-400',
+        text: 'text-rose-300',
+        surface:
+          'bg-rose-500/10 border-rose-500/15'
+      };
+    }
+
+    return {
+      label: 'Realtime',
+      icon: Wifi,
+      dot: 'bg-emerald-400',
+      text: 'text-emerald-300',
+      surface:
+        'bg-emerald-500/10 border-emerald-500/15'
+    };
+  }, [connected]);
+
+  const StatusIcon =
+    networkStatus.icon;
+
+  /* ========================================================= */
+  /* UI */
+  /* ========================================================= */
+
   return (
-    <footer className="border-t border-white/5 bg-slate-950/80 backdrop-blur-xl px-6 lg:px-10 py-3 lg:py-3 flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
-      <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto gap-8 lg:gap-12">
-        {/* Connection */}
-        <div className="flex items-center gap-3 lg:gap-4">
-          <div className={`w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full ${connected ? 'bg-cyber-cyan shadow-[0_0_8px_rgba(56,189,248,0.5)] animate-pulse' : 'bg-slate-700'}`} />
-          <div className="flex flex-col">
-            <span className="label-caps !text-[7px] lg:!text-[8px] !tracking-[0.3em] opacity-50 leading-none mb-1">Status</span>
-            <span className={`text-[9px] lg:text-[10px] font-black tracking-widest leading-none ${connected ? 'text-white' : 'text-slate-600'}`}>
-              {connected ? 'SYNC_ACTIVE' : 'SYNC_LOST'}
-            </span>
-          </div>
-        </div>
+    <footer
+      className="
+        relative overflow-hidden
+        rounded-2xl
+        border border-white/6
+        bg-white/2
+        backdrop-blur-2xl
+      "
+    >
+      {/* ambient glow */}
 
-        {/* Latency */}
-        <div className="flex items-center gap-3 lg:gap-4 border-l border-white/5 pl-6 lg:pl-8">
-          <Clock size={12} className="text-cyber-purple opacity-50" />
-          <div className="flex flex-col">
-            <span className="label-caps !text-[7px] lg:!text-[8px] !tracking-[0.3em] opacity-50 leading-none mb-1">Delay</span>
-            <span className="text-[9px] lg:text-[10px] text-white font-mono font-black tabular-nums leading-none">{wsLatency.toFixed(0)}ms</span>
-          </div>
-        </div>
-
-        {/* Frequency - Hidden on small mobile */}
-        <div className="hidden xs:flex items-center gap-3 lg:gap-4 border-l border-white/5 pl-6 lg:pl-8">
-          <Signal size={12} className="text-cyber-cyan opacity-50" />
-          <div className="flex flex-col">
-            <span className="label-caps !text-[7px] lg:!text-[8px] !tracking-[0.3em] opacity-50 leading-none mb-1">Freq</span>
-            <span className="text-[9px] lg:text-[10px] text-white font-mono font-black tabular-nums leading-none">{streamingFreq}</span>
-          </div>
-        </div>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[10%] top-[-120px] h-[240px] w-[240px] rounded-full bg-cyan-500/5 blur-3xl" />
       </div>
 
-      {/* Right side stats - Hidden on small mobile to save space */}
-      <div className="hidden sm:flex items-center gap-8 lg:gap-12">
-        <div className="flex flex-col text-right">
-          <span className="label-caps !text-[7px] lg:!text-[8px] !tracking-[0.3em] opacity-50 mb-1 leading-none">Stream Vol</span>
-          <div className="flex items-center justify-end gap-2 lg:gap-3 leading-none">
-            <span className="text-[9px] lg:text-[10px] text-white font-mono font-black tabular-nums">{messageCount.toLocaleString()} <span className="text-[7px] lg:text-[8px] text-slate-600">PKTS</span></span>
-            <Database size={12} className="text-slate-700" />
-          </div>
+      {/* content */}
+
+      <div
+        className="
+          relative flex flex-col gap-5
+          px-5 py-5
+
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
+        "
+      >
+        {/* ========================================================= */}
+        {/* LEFT */}
+        {/* ========================================================= */}
+
+        <div
+          className="
+            flex flex-wrap items-center
+            gap-3
+          "
+        >
+          {/* STATUS */}
+
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 10
+            }}
+            animate={{
+              opacity: 1,
+              y: 0
+            }}
+            className={`
+              flex items-center gap-3
+              rounded-xl border
+              px-4 py-3
+              ${networkStatus.surface}
+            `}
+          >
+            <div
+              className={`
+                relative flex h-9 w-9
+                items-center justify-center
+                rounded-lg
+                bg-black/20
+                ${networkStatus.text}
+              `}
+            >
+              <div
+                className={`
+                  absolute right-1 top-1
+                  h-2 w-2 rounded-full
+                  ${networkStatus.dot}
+
+                  ${
+                    connected
+                      ? 'animate-pulse'
+                      : ''
+                  }
+                `}
+              />
+
+              <StatusIcon
+                className="h-4 w-4"
+                strokeWidth={2}
+              />
+            </div>
+
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">
+                Connection
+              </p>
+
+              <p
+                className={`
+                  mt-1 text-sm
+                  font-medium
+                  ${networkStatus.text}
+                `}
+              >
+                {networkStatus.label}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* LATENCY */}
+
+          <FooterMetric
+            icon={
+              <Clock3
+                className="h-4 w-4"
+                strokeWidth={1.9}
+              />
+            }
+            label="Latency"
+            value={`${wsLatency.toFixed(
+              0
+            )} ms`}
+          />
+
+          {/* FREQ */}
+
+          <FooterMetric
+            icon={
+              <Signal
+                className="h-4 w-4"
+                strokeWidth={1.9}
+              />
+            }
+            label="Frequency"
+            value={streamingFreq}
+          />
         </div>
-        
-        <div className="hidden md:flex flex-col text-right">
-          <span className="label-caps !text-[7px] lg:!text-[8px] !tracking-[0.3em] opacity-50 mb-1 leading-none">Buffer</span>
-          <div className="flex items-center justify-end gap-2 lg:gap-3 leading-none">
-            <span className="text-[9px] lg:text-[10px] text-white font-mono font-black tabular-nums">{readings.length.toLocaleString()} <span className="text-[7px] lg:text-[8px] text-slate-600">UNITS</span></span>
-            <Activity size={12} className="text-slate-700" />
-          </div>
+
+        {/* ========================================================= */}
+        {/* RIGHT */}
+        {/* ========================================================= */}
+
+        <div
+          className="
+            flex flex-wrap items-center
+            gap-3
+          "
+        >
+          {/* PACKETS */}
+
+          <FooterMetric
+            icon={
+              <Database
+                className="h-4 w-4"
+                strokeWidth={1.9}
+              />
+            }
+            label="Packets"
+            value={messageCount.toLocaleString()}
+          />
+
+          {/* BUFFER */}
+
+          <FooterMetric
+            icon={
+              <Activity
+                className="h-4 w-4"
+                strokeWidth={1.9}
+              />
+            }
+            label="Buffer"
+            value={readings.length.toLocaleString()}
+          />
         </div>
       </div>
     </footer>
+  );
+}
+
+/* ========================================================= */
+/* FOOTER METRIC */
+/* ========================================================= */
+
+function FooterMetric({
+  icon,
+  label,
+  value
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <motion.div
+      whileHover={{
+        y: -1
+      }}
+      transition={{
+        duration: 0.2
+      }}
+      className="
+        group flex items-center gap-3
+        rounded-xl border border-white/6
+        bg-white/2
+        px-4 py-3
+        transition-all duration-300
+
+        hover:border-cyan-400/15
+        hover:bg-white/3
+      "
+    >
+      <div
+        className="
+          flex h-9 w-9
+          items-center justify-center
+          rounded-lg
+          bg-cyan-500/10
+          text-cyan-300
+          transition-transform duration-300
+
+          group-hover:scale-105
+        "
+      >
+        {icon}
+      </div>
+
+      <div>
+        <p className="text-[10px] uppercase tracking-[0.22em] text-white/28">
+          {label}
+        </p>
+
+        <p className="mt-1 text-sm font-medium text-white/92">
+          {value}
+        </p>
+      </div>
+    </motion.div>
   );
 }

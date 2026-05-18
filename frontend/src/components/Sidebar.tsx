@@ -1,148 +1,543 @@
-import React from 'react';
-import { useAppDispatch, useAppSelector } from '../store';
-import { 
-  setIsPaused, 
-  setAnomalySensitivity, 
-  setCalibrationMode, 
-  setSignalNormalization 
-} from '../store/telemetrySlice';
 import {
-  PauseIcon,
-  PlayIcon,
-  ChevronDownIcon,
-  SettingsIcon,
-  ZapOffIcon,
-  RotateCwIcon,
+  Pause,
+  Play,
+  RotateCw,
   ShieldCheck,
-  Cpu
+  Sparkles,
+  Zap
 } from 'lucide-react';
+
+import {
+  useAppDispatch,
+  useAppSelector
+} from '../store';
+
+import {
+  setAnomalySensitivity,
+  setCalibrationMode,
+  setIsPaused
+} from '../store/telemetrySlice';
+
+import { setActiveProfile } from '../features/experiments/experimentSlice';
+
+/* ========================================================= */
+/* COMPONENT */
+/* ========================================================= */
 
 export function Sidebar() {
   const dispatch = useAppDispatch();
-  const { 
-    isPaused, 
-    anomalySensitivity, 
-    calibrationMode, 
-    signalNormalizationActive: signalNormalization,
-    connected 
-  } = useAppSelector((state) => state.telemetry);
+
+  const {
+    isPaused,
+    anomalySensitivity,
+    calibrationMode,
+    connected
+  } = useAppSelector(
+    (state) => state.telemetry
+  );
+
+  const {
+    profiles,
+    activeProfileId
+  } = useAppSelector(
+    (state) => state.experiments
+  );
+
+  const activeProfile =
+    profiles.find(
+      (profile) =>
+        profile.id === activeProfileId
+    ) ?? profiles[0];
 
   return (
-    <div className="flex flex-col h-full space-y-4 lg:space-y-6">
-      {/* Stream control */}
-      <div className="glass-card p-1 rounded-xl lg:rounded-2xl">
-        <button
-          onClick={() => dispatch(setIsPaused(!isPaused))}
-          className={`w-full flex items-center justify-center gap-3 py-4 lg:py-5 text-[10px] lg:text-xs font-black tracking-widest transition-all duration-300 rounded-lg lg:rounded-xl group ${
-            isPaused 
-              ? 'bg-cyber-cyan/10 text-cyber-cyan border border-cyber-cyan/30 hover:bg-cyber-cyan/20' 
-              : 'bg-white/5 text-slate-400 border border-white/5 hover:text-white hover:border-white/20'
-          }`}
-        >
-          {isPaused ? (
-            <>
-              <PlayIcon size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
-              RESUME MONITORING
-            </>
-          ) : (
-            <>
-              <PauseIcon size={18} fill="currentColor" className="group-hover:scale-110 transition-transform" />
-              SUSPEND SCAN
-            </>
-          )}
-        </button>
-      </div>
+    <aside
+      className="
+        sticky top-6
+        flex max-h-[calc(100vh-48px)]
+        flex-col gap-5
+        overflow-y-auto
+      "
+    >
+      {/* ===================================================== */}
+      {/* STREAM CONTROL */}
+      {/* ===================================================== */}
 
-      {/* Experiment selector */}
-      <div className="p-4 lg:p-6 glass-card rounded-xl lg:rounded-2xl space-y-4">
-        <label className="label-caps">Target Workspace</label>
-        <div className="flex items-center justify-between px-4 py-4 lg:py-3 bg-white/5 border border-white/5 rounded-xl text-[10px] lg:text-xs text-white font-bold cursor-pointer hover:border-cyber-cyan/30 transition-all group">
-          <div className="flex items-center gap-3">
-            <Cpu size={16} className="text-cyber-cyan" />
-            <span className="font-mono">PRODUCTION_GRID_X</span>
+      <section
+        className="
+          overflow-hidden rounded-3xl
+          border border-white/5
+          bg-white/2
+          backdrop-blur-2xl
+        "
+      >
+        <div className="border-b border-white/5 px-5 py-5">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-cyan-400" />
+
+            <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">
+              Stream control
+            </p>
           </div>
-          <ChevronDownIcon size={14} className="text-slate-500 group-hover:text-cyber-cyan" />
-        </div>
-      </div>
 
-      {/* Anomaly sensitivity */}
-      <div className="p-4 lg:p-6 glass-card rounded-xl lg:rounded-2xl space-y-4">
-        <div className="flex items-center justify-between">
-          <label className="label-caps">AI Threshold</label>
-          <span className="font-mono text-[10px] font-bold text-cyber-cyan bg-cyber-cyan/10 px-2 py-1 rounded-md border border-cyber-cyan/20">
-            {anomalySensitivity.toFixed(1)}σ
-          </span>
+          <h3 className="mt-4 text-[1.15rem] font-semibold tracking-[-0.05em] text-white">
+            Monitoring session
+          </h3>
         </div>
-        <div className="relative pt-2 pb-1">
+
+        <div className="p-5">
+          <button
+            type="button"
+            onClick={() =>
+              dispatch(setIsPaused(!isPaused))
+            }
+            className={`
+              flex w-full items-center
+              justify-center gap-3
+              rounded-2xl border
+              px-5 py-4
+              text-[11px]
+              font-medium uppercase
+              tracking-[0.18em]
+              transition-all duration-200
+
+              ${
+                isPaused
+                  ? `
+                    border-cyan-400/20
+                    bg-cyan-500/10
+                    text-cyan-300
+                  `
+                  : `
+                    border-white/5
+                    bg-white/1.5
+                    text-white/70
+
+                    hover:border-cyan-400/20
+                    hover:bg-white/3
+                    hover:text-cyan-300
+                  `
+              }
+            `}
+          >
+            {isPaused ? (
+              <>
+                <Play size={15} />
+                Resume monitoring
+              </>
+            ) : (
+              <>
+                <Pause size={15} />
+                Pause monitoring
+              </>
+            )}
+          </button>
+
+          <div
+            className="
+              mt-5 flex items-center
+              justify-between rounded-2xl
+              border border-white/5
+              bg-white/1.5
+              px-4 py-4
+            "
+          >
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-white/25">
+                Connection
+              </p>
+
+              <p className="mt-1 text-sm font-medium text-white">
+                {connected
+                  ? 'Operational'
+                  : 'Disconnected'}
+              </p>
+            </div>
+
+            <div
+              className={`
+                h-2.5 w-2.5 rounded-full
+
+                ${
+                  connected
+                    ? 'bg-emerald-400 shadow-[0_0_12px_rgba(74,222,128,0.8)]'
+                    : 'bg-rose-400'
+                }
+              `}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ===================================================== */}
+      {/* PROFILE SWITCHER */}
+      {/* ===================================================== */}
+
+      <section
+        className="
+          rounded-3xl border
+          border-white/5
+          bg-white/2
+          p-5
+          backdrop-blur-2xl
+        "
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-white/25">
+              Active profile
+            </p>
+
+            <h3 className="mt-3 text-lg font-semibold tracking-[-0.04em] text-white">
+              {activeProfile.name}
+            </h3>
+          </div>
+
+          <div
+            className="
+              flex h-11 w-11
+              items-center justify-center
+              rounded-2xl
+              bg-cyan-500/10
+              text-cyan-300
+            "
+          >
+            <Sparkles size={18} />
+          </div>
+        </div>
+
+        <div className="mt-5 space-y-3">
+          {profiles.map((profile) => {
+            const active =
+              profile.id === activeProfile.id;
+
+            return (
+              <button
+                key={profile.id}
+                type="button"
+                onClick={() =>
+                  dispatch(
+                    setActiveProfile(
+                      profile.id
+                    )
+                  )
+                }
+                className={`
+                  flex w-full items-center
+                  justify-between rounded-2xl
+                  border px-4 py-4
+                  text-left
+                  transition-all duration-200
+
+                  ${
+                    active
+                      ? `
+                        border-cyan-400/20
+                        bg-cyan-500/10
+                      `
+                      : `
+                        border-white/5
+                        bg-white/1.5
+
+                        hover:border-cyan-400/20
+                        hover:bg-white/3
+                      `
+                  }
+                `}
+              >
+                <div>
+                  <p className="text-sm font-medium text-white">
+                    {profile.name}
+                  </p>
+
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.18em] text-white/25">
+                    {profile.mode}
+                  </p>
+                </div>
+
+                {active && (
+                  <div className="h-2 w-2 rounded-full bg-cyan-400" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ===================================================== */}
+      {/* DETECTION */}
+      {/* ===================================================== */}
+
+      <section
+        className="
+          rounded-3xl border
+          border-white/5
+          bg-white/2
+          p-5
+          backdrop-blur-2xl
+        "
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-white/25">
+              Detection threshold
+            </p>
+
+            <h3 className="mt-3 text-lg font-semibold text-white">
+              Sensitivity
+            </h3>
+          </div>
+
+          <div
+            className="
+              rounded-full
+              border border-cyan-400/20
+              bg-cyan-500/10
+              px-3 py-1
+              text-[11px]
+              text-cyan-300
+            "
+          >
+            {anomalySensitivity.toFixed(1)}σ
+          </div>
+        </div>
+
+        <div className="mt-6">
           <input
             type="range"
             min="1.5"
-            max="3.0"
+            max="3"
             step="0.1"
             value={anomalySensitivity}
-            onChange={(e) => dispatch(setAnomalySensitivity(parseFloat(e.target.value)))}
-            className="w-full accent-cyber-cyan cursor-pointer h-2 bg-white/5 rounded-lg appearance-none"
+            onChange={(e) =>
+              dispatch(
+                setAnomalySensitivity(
+                  parseFloat(
+                    e.target.value
+                  )
+                )
+              )
+            }
+            className="
+              h-2 w-full cursor-pointer
+              appearance-none rounded-full
+              bg-white/5 accent-cyan-400
+            "
           />
         </div>
-        <p className="text-[9px] lg:text-[10px] text-slate-500 font-medium leading-relaxed">
-          Sigma values recalibrate the active neural detection layer in real-time.
-        </p>
-      </div>
+      </section>
 
-      {/* Control modes */}
-      <div className="p-4 lg:p-6 glass-card rounded-xl lg:rounded-2xl space-y-4">
-        <label className="label-caps">System Overlays</label>
-        <div className="space-y-3">
-          <button
-            onClick={() => dispatch(setCalibrationMode(!calibrationMode))}
-            className={`w-full flex items-center justify-between px-4 py-4 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
-              calibrationMode
-                ? 'bg-cyber-cyan/10 border-cyber-cyan/50 text-cyber-cyan'
-                : 'bg-white/5 border-white/5 text-slate-500 hover:border-white/20'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <RotateCwIcon size={14} className={calibrationMode ? 'animate-spin-slow' : ''} />
-              Auto-Calibration
+      {/* ===================================================== */}
+      {/* PROCESSING */}
+      {/* ===================================================== */}
+
+      <section
+        className="
+          rounded-3xl border
+          border-white/5
+          bg-white/2
+          p-5
+          backdrop-blur-2xl
+        "
+      >
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.18em] text-white/25">
+            Runtime controls
+          </p>
+
+          <h3 className="mt-3 text-lg font-semibold text-white">
+            Processing engine
+          </h3>
+        </div>
+
+        <div className="mt-6">
+          <ToggleCard
+            active={calibrationMode}
+            title="Auto calibration"
+            description="Realtime telemetry recalibration"
+            icon={
+              <RotateCw
+                size={16}
+                className={
+                  calibrationMode
+                    ? 'animate-spin'
+                    : ''
+                }
+              />
+            }
+            onClick={() =>
+              dispatch(
+                setCalibrationMode(
+                  !calibrationMode
+                )
+              )
+            }
+          />
+        </div>
+      </section>
+
+      {/* ===================================================== */}
+      {/* STATUS */}
+      {/* ===================================================== */}
+
+      <section
+        className="
+          overflow-hidden rounded-3xl
+          border border-white/5
+          bg-white/2
+          backdrop-blur-2xl
+        "
+      >
+        <div className="p-5">
+          <div className="flex items-start gap-4">
+            <div
+              className="
+                flex h-12 w-12
+                items-center justify-center
+                rounded-2xl
+                bg-emerald-500/10
+                text-emerald-300
+              "
+            >
+              <ShieldCheck size={18} />
             </div>
-            {calibrationMode && <div className="w-1.5 h-1.5 rounded-full bg-cyber-cyan shadow-[0_0_8px_rgba(56,189,248,1)]" />}
-          </button>
-          
-          <button
-            onClick={() => dispatch(setSignalNormalization(!signalNormalization))}
-            className={`w-full flex items-center justify-between px-4 py-4 lg:py-3 rounded-xl text-[9px] lg:text-[10px] font-black uppercase tracking-widest transition-all duration-300 border ${
-              signalNormalization
-                ? 'bg-cyber-purple/10 border-cyber-purple/50 text-cyber-purple'
-                : 'bg-white/5 border-white/5 text-slate-500 hover:border-white/20'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <ZapOffIcon size={14} />
-              Normalization
+
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.18em] text-white/25">
+                Infrastructure
+              </p>
+
+              <h3 className="mt-2 text-lg font-semibold text-white">
+                Protection active
+              </h3>
+
+              <p className="mt-3 text-sm leading-7 text-white/42">
+                Telemetry detection systems are
+                operating within expected
+                thresholds.
+              </p>
             </div>
-            {signalNormalization && <div className="w-1.5 h-1.5 rounded-full bg-cyber-purple shadow-[0_0_8px_rgba(129,140,248,1)]" />}
+          </div>
+
+          <button
+            type="button"
+            className="
+              mt-6 flex w-full
+              items-center justify-center gap-3
+              rounded-2xl border
+              border-white/5
+              bg-white/1.5
+              px-5 py-4
+              text-[11px]
+              font-medium uppercase
+              tracking-[0.18em]
+              text-white/70
+              transition-all duration-200
+
+              hover:border-cyan-400/20
+              hover:bg-white/3
+              hover:text-cyan-300
+            "
+          >
+            <Zap size={15} />
+
+            View audit logs
           </button>
+        </div>
+      </section>
+    </aside>
+  );
+}
+
+/* ========================================================= */
+/* TOGGLE CARD */
+/* ========================================================= */
+
+function ToggleCard({
+  active,
+  title,
+  description,
+  icon,
+  onClick
+}: {
+  active: boolean;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`
+        flex w-full items-start
+        justify-between gap-4
+        rounded-2xl border
+        px-4 py-4
+        text-left
+        transition-all duration-200
+
+        ${
+          active
+            ? `
+              border-cyan-400/20
+              bg-cyan-500/10
+            `
+            : `
+              border-white/5
+              bg-white/1.5
+
+              hover:border-cyan-400/20
+              hover:bg-white/3
+            `
+        }
+      `}
+    >
+      <div className="flex gap-4">
+        <div
+          className={`
+            flex h-10 w-10
+            items-center justify-center
+            rounded-xl
+
+            ${
+              active
+                ? `
+                  bg-cyan-500/15
+                  text-cyan-300
+                `
+                : `
+                  bg-white/5
+                  text-white/50
+                `
+            }
+          `}
+        >
+          {icon}
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-white">
+            {title}
+          </p>
+
+          <p className="mt-1 text-[12px] leading-6 text-white/38">
+            {description}
+          </p>
         </div>
       </div>
 
-      {/* Status section */}
-      <div className="mt-auto pt-6 border-t border-white/5 hidden lg:block">
-        <div className="flex items-start gap-4 mb-4 px-2">
-          <div className="p-2 bg-cyber-cyan/10 rounded-xl border border-cyber-cyan/20">
-            <ShieldCheck size={20} className="text-cyber-cyan" />
-          </div>
-          <div>
-            <p className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Active Protection</p>
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <p className="text-[10px] text-slate-500 font-bold uppercase">Grid Status: Verified</p>
-            </div>
-          </div>
-        </div>
-        <button className="w-full cyber-button text-[10px] font-black uppercase tracking-widest h-12">
-          View Audit logs
-        </button>
-      </div>
-    </div>
+      <div
+        className={`
+          mt-1 h-2.5 w-2.5 rounded-full
+
+          ${
+            active
+              ? 'bg-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.8)]'
+              : 'bg-white/12'
+          }
+        `}
+      />
+    </button>
   );
 }

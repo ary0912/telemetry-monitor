@@ -17,93 +17,216 @@ const anomalies = [];
 
 // Telemetry state - tracks baseline and drift for realistic simulation
 const telemetryState = {
-  temperature: { baseline: 73.2, drift: 0, driftRate: 0.001 },
-  voltage: { baseline: 5.0, drift: 0, driftRate: 0.0005 },
-  signalNoise: { baseline: 0.15, drift: 0, driftRate: 0.0002 },
-  laserStability: { baseline: 98.5, drift: 0, driftRate: 0.0003 },
-  controlSignalDrift: { baseline: 0.08, drift: 0, driftRate: 0.0001 },
+  temperature: {
+    baseline: 73.2,
+    drift: 0,
+    driftRate: 0.001,
+    amplitude: 0.8,
+    frequency: 0.48,
+    noise: 0.28
+  },
+  voltage: {
+    baseline: 5.0,
+    drift: 0,
+    driftRate: 0.0005,
+    amplitude: 0.1,
+    frequency: 0.28,
+    noise: 0.018
+  },
+  signalNoise: {
+    baseline: 0.15,
+    drift: 0,
+    driftRate: 0.00023,
+    amplitude: 0.03,
+    frequency: 0.22,
+    noise: 0.008
+  },
+  laserStability: {
+    baseline: 98.5,
+    drift: 0,
+    driftRate: 0.0003,
+    amplitude: 0.45,
+    frequency: 0.36,
+    noise: 0.18
+  },
+  controlSignalDrift: {
+    baseline: 0.08,
+    drift: 0,
+    driftRate: 0.00012,
+    amplitude: 0.018,
+    frequency: 0.52,
+    noise: 0.004
+  },
+  errorRate: {
+    baseline: 0.002,
+    drift: 0,
+    driftRate: 0.000012,
+    amplitude: 0.0009,
+    frequency: 0.14,
+    noise: 0.00035
+  },
+  signalIntegrity: {
+    baseline: 99.8,
+    drift: 0,
+    driftRate: 0.00011,
+    amplitude: 0.16,
+    frequency: 0.12,
+    noise: 0.05
+  },
   systemUptime: 0,
-  errorRate: { baseline: 0.002, drift: 0, driftRate: 0.00001 },
-  signalIntegrity: { baseline: 99.8, drift: 0, driftRate: 0.0001 }
+  telemetryChannels: 14
 };
 
 const EXPERIMENT_START = Date.now();
 let messageCount = 0;
+let lastTelemetry = null;
 
 // Telemetry data generator using sine waves + drift + noise
 // This feels more physical than pure randomness
 function generateTelemetry() {
   const now = Date.now();
   const elapsedSeconds = (now - EXPERIMENT_START) / 1000;
+  telemetryState.systemUptime = elapsedSeconds;
 
   // Apply drift to baselines
   for (const key in telemetryState) {
-    if (telemetryState[key].driftRate !== undefined) {
-      telemetryState[key].drift += telemetryState[key].driftRate * (Math.random() - 0.48);
-      // Clamp drift to prevent runaway
-      telemetryState[key].drift = Math.max(-0.5, Math.min(0.5, telemetryState[key].drift));
+    const metric = telemetryState[key];
+    if (metric && metric.driftRate !== undefined) {
+      metric.drift += metric.driftRate * (Math.random() - 0.48);
+      metric.drift = Math.max(-0.6, Math.min(0.6, metric.drift));
     }
   }
 
-  // Generate values using sine waves for natural oscillation + drift + noise
   const generateValue = (baseline, amplitude, frequency, drift, noise) => {
     const oscillation = amplitude * Math.sin((elapsedSeconds * frequency * Math.PI) / 10);
     const randomNoise = (Math.random() - 0.5) * 2 * noise;
     return baseline + drift + oscillation + randomNoise;
   };
 
-  return {
-    timestamp: now,
-    temperature: generateValue(
+  const temperature = parseFloat(
+    generateValue(
       telemetryState.temperature.baseline,
-      0.8,
-      0.5,
+      telemetryState.temperature.amplitude,
+      telemetryState.temperature.frequency,
       telemetryState.temperature.drift,
-      0.3
-    ),
-    voltage: generateValue(
+      telemetryState.temperature.noise
+    ).toFixed(2)
+  );
+
+  const voltage = parseFloat(
+    generateValue(
       telemetryState.voltage.baseline,
-      0.1,
-      0.3,
+      telemetryState.voltage.amplitude,
+      telemetryState.voltage.frequency,
       telemetryState.voltage.drift,
-      0.02
-    ),
-    signalNoise: generateValue(
+      telemetryState.voltage.noise
+    ).toFixed(3)
+  );
+
+  const signalNoise = parseFloat(
+    generateValue(
       telemetryState.signalNoise.baseline,
-      0.03,
-      0.2,
+      telemetryState.signalNoise.amplitude,
+      telemetryState.signalNoise.frequency,
       telemetryState.signalNoise.drift,
-      0.01
-    ),
-    laserStability: generateValue(
+      telemetryState.signalNoise.noise
+    ).toFixed(4)
+  );
+
+  const laserStability = parseFloat(
+    generateValue(
       telemetryState.laserStability.baseline,
-      0.5,
-      0.4,
+      telemetryState.laserStability.amplitude,
+      telemetryState.laserStability.frequency,
       telemetryState.laserStability.drift,
-      0.2
-    ),
-    controlSignalDrift: generateValue(
+      telemetryState.laserStability.noise
+    ).toFixed(2)
+  );
+
+  const controlSignalDrift = parseFloat(
+    generateValue(
       telemetryState.controlSignalDrift.baseline,
-      0.02,
-      0.6,
+      telemetryState.controlSignalDrift.amplitude,
+      telemetryState.controlSignalDrift.frequency,
       telemetryState.controlSignalDrift.drift,
-      0.005
-    ),
-    errorRate: generateValue(
+      telemetryState.controlSignalDrift.noise
+    ).toFixed(4)
+  );
+
+  const errorRate = parseFloat(
+    generateValue(
       telemetryState.errorRate.baseline,
-      0.001,
-      0.1,
+      telemetryState.errorRate.amplitude,
+      telemetryState.errorRate.frequency,
       telemetryState.errorRate.drift,
-      0.0005
-    ),
-    signalIntegrity: 99.8 + Math.sin(elapsedSeconds * 0.1) * 0.15 - Math.random() * 0.08,
-    systemUptime: elapsedSeconds
+      telemetryState.errorRate.noise
+    ).toFixed(5)
+  );
+
+  const signalIntegrity = parseFloat(
+    Math.max(
+      91.5,
+      Math.min(
+        99.99,
+        telemetryState.signalIntegrity.baseline +
+          Math.sin(elapsedSeconds * 0.1) * telemetryState.signalIntegrity.amplitude -
+          Math.random() * telemetryState.signalIntegrity.noise -
+          Math.abs(errorRate - telemetryState.errorRate.baseline) * 12
+      )
+    ).toFixed(2)
+  );
+
+  const signalLatency = parseFloat(
+    (12 + Math.sin(elapsedSeconds * 0.4) * 3 + Math.random() * 1.2).toFixed(1)
+  );
+
+  const powerLoad = parseFloat(
+    (62 + Math.cos(elapsedSeconds * 0.25) * 2.8 + Math.random() * 0.4).toFixed(1)
+  );
+
+  const powerEfficiency = parseFloat(
+    (94 + Math.sin(elapsedSeconds * 0.14) * 1.2 - Math.random() * 0.3).toFixed(1)
+  );
+
+  const pipelineHealth = parseFloat(
+    (97 + Math.cos(elapsedSeconds * 0.08) * 1.5 - Math.random() * 0.25).toFixed(1)
+  );
+
+  const phaseSeverity = signalIntegrity < 97.2 || errorRate > 0.0052 ? 2 : 1;
+  const missionPhase =
+    elapsedSeconds < 120
+      ? 'Initialization'
+      : phaseSeverity === 2
+      ? 'Alert'
+      : 'Nominal';
+
+  const data = {
+    timestamp: now,
+    messageId: messageCount + 1,
+    telemetryChannels: telemetryState.telemetryChannels,
+    missionPhase,
+    temperature,
+    voltage,
+    signalNoise,
+    laserStability,
+    controlSignalDrift,
+    errorRate,
+    signalIntegrity,
+    systemUptime: elapsedSeconds,
+    signalLatency,
+    powerLoad,
+    powerEfficiency,
+    pipelineHealth,
+    source: 'mission telemetry simulator'
   };
+
+  return data;
 }
 
 // Broadcast telemetry to all connected clients
 function broadcastTelemetry() {
   const data = generateTelemetry();
+  lastTelemetry = data;
   messageCount++;
 
   const payload = JSON.stringify({
@@ -175,7 +298,9 @@ app.get('/api/health', (req, res) => {
     status: 'healthy',
     uptime: (Date.now() - EXPERIMENT_START) / 1000,
     connectedClients: wss.clients.size,
-    messagesSent: messageCount
+    messagesSent: messageCount,
+    telemetryChannels: telemetryState.telemetryChannels,
+    currentPhase: lastTelemetry?.missionPhase ?? 'Unknown'
   });
 });
 
@@ -195,6 +320,19 @@ app.get('/api/anomalies/:id', (req, res) => {
   res.json(anomaly);
 });
 
+app.get('/api/telemetry/latest', (req, res) => {
+  if (!lastTelemetry) {
+    return res.status(503).json({ error: 'Telemetry stream not ready' });
+  }
+
+  res.json({
+    status: 'ok',
+    telemetry: lastTelemetry,
+    channels: telemetryState.telemetryChannels,
+    missionPhase: lastTelemetry.missionPhase
+  });
+});
+
 const PORT = process.env.PORT || 8080;
 
 httpServer.listen(PORT, () => {
@@ -202,6 +340,7 @@ httpServer.listen(PORT, () => {
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
   console.log(`HTTP: http://localhost:${PORT}`);
   console.log(`WS:   ws://localhost:${PORT}/ws`);
+  console.log(`Telemetry API: http://localhost:${PORT}/api/telemetry/latest`);
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 });
 

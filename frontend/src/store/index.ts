@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import telemetryReducer from './telemetrySlice';
+import experimentReducer from '../features/experiments/experimentSlice';
 
 export const store = configureStore({
   reducer: {
     telemetry: telemetryReducer,
+    experiments: experimentReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, // For potentially large datasets/complex types if needed
+      serializableCheck: false,
     }),
 });
 

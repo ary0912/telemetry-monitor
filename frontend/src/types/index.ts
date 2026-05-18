@@ -55,3 +55,17 @@ export interface MetricConfig {
 }
 
 export type MetricConfigs = Record<MetricKey, MetricConfig>;
+
+export interface TelemetrySnapshot {
+  id: string;
+  timestamp: string;
+  summary: string;
+}
+
+export interface OperatorNote {
+  id: string;
+  content: string;
+  updatedAt: string;
+}
+
+export type EventSeverity = 'critical' | 'warning' | 'info';

@@ -1,153 +1,141 @@
-# Telemetry Monitoring System
+# Telemetry Monitor
 
-A professional real-time telemetry monitoring system for experimental hardware systems. Built with Node.js/Express backend, React/TypeScript frontend, and WebSocket real-time streaming.
+A production-ready industrial telemetry observability platform built with a React + TypeScript frontend and a Node.js backend. Designed for high-frequency data streams, anomaly intelligence, and operator workflows in mission-critical engineering environments.
 
-**🚀 Live Demo:** Coming soon after GitHub push!
 
-## Overview
+## Platform overview
 
-This is a production-grade internal monitoring dashboard designed for scientists and hardware engineers running high-frequency experimental systems. Stream and analyze telemetry data in real-time, with statistical anomaly detection and an intuitive dark-themed interface optimized for lab environments.
+Telemetry Monitor is built to support engineering operations with a production-quality observability shell, real-time charting, anomaly detection, incident history, operator notes, and snapshot capture.
 
-## Features
+## Key features
 
-- **Live multi-metric streaming** via WebSocket (7 concurrent metrics)
-- **Statistical anomaly detection** using rolling z-score analysis
-- **Dark-themed dashboard** optimized for lab environments
-- **Configurable sensitivity thresholds** for anomaly detection
-- **Pause/resume streaming** without losing data
-- **Export anomaly logs** as CSV
-- **Rolling 10-minute chart window** with zoom capability
-- **System health indicators** (latency, throughput, signal integrity)
-- **Realistic data simulation** using sine waves + drift + noise
+- Live streaming telemetry over WebSocket
+- Real-time anomaly scoring and alert surfacing
+- Operator notes panel with persistent storage
+- Snapshot capture for investigation handoff
+- Health score, latency, and throughput monitoring
+- Adaptive experiment profiles with mission modes
+- Command palette with `Cmd/Ctrl+K`
+- Fully responsive industrial dashboard
 
-## Tech Stack
+## Tech stack
 
-**Backend:**
+**Backend**
 - Node.js + Express
-- WebSocket server for real-time streaming
-- Simulated telemetry with realistic physical behavior
+- `ws` WebSocket server for live telemetry
+- Simulated telemetry generator for prototype workloads
 
-**Frontend:**
+**Frontend**
 - React 18 + TypeScript
-- Vite (dev server + bundler)
-- Zustand (state management)
-- Recharts (time-series visualization)
-- Tailwind CSS (minimal styling)
-- Lucide React (icons)
+- Vite bundler
+- Redux Toolkit for state management
+- Tailwind CSS for UI styling
+- Recharts for interactive charts
+- framer-motion for polished motion
+- react-router-dom for navigation
 
-## Project Structure
+## Project structure
 
 ```
 telemetry-monitor/
 ├── backend/
-│   ├── server.js           # Express + WebSocket server
+│   ├── server.js
 │   ├── package.json
-│   ├── Procfile            # Railway deployment
-│   └── .env.example
+│   ├── Procfile
 ├── frontend/
+│   ├── package.json
 │   ├── src/
-│   │   ├── components/     # React components (Dashboard, Charts, etc.)
-│   │   ├── hooks/          # Custom hooks (WebSocket connection)
-│   │   ├── store/          # Zustand state management
-│   │   ├── utils/          # Anomaly detection, formatting
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   ├── vite.config.ts
-│   ├── tailwind.config.js
-│   └── package.json
+│   │   ├── components/
+│   │   ├── features/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── store/
+│   │   ├── types/
+│   │   └── utils/
+│   ├── tsconfig.json
+│   └── vite.config.ts
 ├── README.md
-├── vercel.json             # Vercel deployment config
-└── .gitignore
+└── vercel.json
 ```
 
-## Quick Start
-
-### Local Development
+## Quick start
 
 **Prerequisites:** Node.js 18+
 
-1. **Clone and install:**
-   ```bash
-   git clone <repo-url>
-   cd telemetry-monitor
-   npm install
-   cd frontend && npm install && cd ..
-   ```
+```bash
+cd /Users/aryanlodha/Desktop/2026 Projects/telemetry-monitor
+npm install
+cd frontend
+npm install
+```
 
-2. **Start backend:**
-   ```bash
-   cd backend && node server.js
-   ```
-   Runs on `http://localhost:8080`
+Run backend:
 
-3. **Start frontend (new terminal):**
-   ```bash
-   cd frontend && npm run dev
-   ```
-   Runs on `http://localhost:3000`
+```bash
+cd backend
+node server.js
+```
+
+Run frontend in another terminal:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Open `http://localhost:3000`
 
 ## Deployment
 
-### Frontend (Vercel - Free)
+### Frontend
+1. Push the repository to GitHub
+2. Create a new Vercel project
+3. Import the repo
+4. Set `VITE_API_BASE_URL` to your backend URL, if required
 
-1. Push code to GitHub
-2. Go to [vercel.com](https://vercel.com) → New Project
-3. Import your GitHub repository
-4. Vercel auto-detects Vite configuration
-5. Add environment variable:
-   - `VITE_API_BASE_URL` = Your backend URL
-6. Deploy!
+### Backend
+1. Deploy the `backend` folder to Railway, Heroku, or any Node host
+2. Set `PORT` and `NODE_ENV=production`
 
-### Backend (Railway - Free)
+## Architecture
 
-1. Go to [railway.app](https://railway.app) → New Project
-2. Deploy from GitHub repository
-3. Railway auto-detects Node.js
-4. Set environment variables in Railway dashboard:
-   - `PORT` = 8080
-   - `NODE_ENV` = production
-5. Copy the Railway URL and set it as `VITE_API_BASE_URL` in Vercel
+The frontend is built around a shell layout with:
+- `Shell.tsx` for navigation, status, and command palette
+- `DashboardPage.tsx` for the mission control experience
+- `CommandPalette.tsx` for instant operator actions
+- `Telemetric` and anomaly state in Redux Toolkit
+- `useTelemetrySync.ts` for live WebSocket ingestion
 
-## API Reference
+The backend emits simulated telemetry data to the front-end WebSocket connection.
 
-### WebSocket: `ws://localhost:8080/api/telemetry`
+## Data model
 
-Real-time telemetry stream (400ms updates)
+The platform tracks multiple industrial metrics, including:
+- temperature
+- voltage
+- signalNoise
+- laserStability
+- controlSignalDrift
+- errorRate
+- signalIntegrity
 
-**Message format:**
-```json
-{
-  "timestamp": 1697894400000,
-  "temperature": 45.2,
-  "pressure": 1013.25,
-  "vibration": 0.12,
-  "humidity": 65.4,
-  "anomalies": ["temperature"]
-}
-```
+## Notes
 
-### REST Endpoints
+- Use `Cmd/Ctrl+K` to open the command palette.
+- Operator notes are stored in the browser local storage.
+- Snapshots capture a quick state summary useful for incident triage.
+- Live stream health and stale-stream detection help maintain observability.
 
-- `GET /api/health` - Server health & status
-- `GET /api/anomalies` - Anomaly log (latest)
+## Future improvements
 
-## Architecture Details
+- Add historical persistence and analytics storage
+- Add webhooks and external alert channels
+- Support authenticated user sessions
+- Add metric filtering and saved dashboards
 
-The system monitors:
+---
 
-| Metric | Unit | Normal Range | Purpose |
-|--------|------|--------------|---------|
-| Temperature | °C | 70–76 | Thermal control feedback |
-| Voltage | V | 4.8–5.2 | Power supply stability |
-| Signal Noise | μV | 0.1–0.2 | Signal quality indicator |
-| Laser Stability | % | 97.5–99.5 | Laser output consistency |
-| Control Signal Drift | rad | 0.05–0.11 | System control precision |
-| Error Rate | % | 0–0.5 | Data integrity check |
-| Signal Integrity | % | 99.6–100.0 | Overall system health |
-
-## Anomaly Detection
-
-Anomalies are detected using a rolling z-score calculation over the last 50 readings:
+> Run frontend with `npm run dev` and backend with `node server.js`.
 
 ```
 z = (value - rolling_mean) / rolling_stddev

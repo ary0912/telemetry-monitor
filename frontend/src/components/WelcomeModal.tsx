@@ -1,96 +1,286 @@
-import React, { useState, useEffect } from 'react';
-import { Shield, Zap, Activity, Info, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+
+import {
+  Activity,
+  Shield,
+  X
+} from 'lucide-react';
+
+const STORAGE_KEY = 'telemetry-welcome-dismissed';
 
 export function WelcomeModal() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  /* ===================================================== */
+  /* DELAY MODAL OPEN */
+  /* ===================================================== */
 
   useEffect(() => {
-    const hasSeenModal = localStorage.getItem('hasSeenWelcomeModal');
-    if (!hasSeenModal) {
-      setIsOpen(true);
-    }
+    const dismissed =
+      localStorage.getItem(STORAGE_KEY);
+
+    if (dismissed) return;
+
+    const timer = window.setTimeout(() => {
+      setIsVisible(true);
+    }, 1400);
+
+    return () => window.clearTimeout(timer);
   }, []);
 
+  /* ===================================================== */
+  /* CLOSE */
+  /* ===================================================== */
+
   const handleClose = () => {
-    localStorage.setItem('hasSeenWelcomeModal', 'true');
-    setIsOpen(false);
+    localStorage.setItem(
+      STORAGE_KEY,
+      'true'
+    );
+
+    setIsVisible(false);
   };
 
-  if (!isOpen) return null;
+  /* ===================================================== */
+  /* EXIT */
+  /* ===================================================== */
+
+  if (!isVisible) return null;
+
+  /* ===================================================== */
+  /* UI */
+  /* ===================================================== */
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-500">
-      <div className="relative w-[95%] max-w-lg glass-card rounded-2xl lg:rounded-3xl overflow-hidden animate-in zoom-in-95 duration-500 max-h-[90vh] overflow-y-auto">
-        {/* Header/Banner */}
-        <div className="h-32 lg:h-40 bg-gradient-to-br from-cyber-cyan/10 via-cyber-purple/5 to-transparent relative flex flex-col items-center justify-center border-b border-white/5 shrink-0">
-          <div className="absolute inset-0 cyber-grid opacity-20" />
-          <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-xl lg:rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center relative group overflow-hidden mb-3 lg:mb-4">
-            <Zap className="text-cyber-cyan group-hover:scale-110 transition-transform duration-500 w-6 h-6 lg:w-7 lg:h-7" strokeWidth={1.5} />
+    <div
+      className="
+        fixed inset-0 z-[120]
+        flex items-center justify-center
+        bg-black/55
+        px-4
+        backdrop-blur-md
+      "
+    >
+      {/* ================================================ */}
+      {/* MODAL */}
+      {/* ================================================ */}
+
+      <div
+        className="
+          relative w-full max-w-xl
+          overflow-hidden
+          rounded-3xl
+          border border-white/10
+          bg-[#0A0F1B]/96
+          shadow-[0_20px_80px_rgba(0,0,0,0.45)]
+          animate-[modalFade_0.45s_cubic-bezier(0.22,1,0.36,1)]
+        "
+      >
+        {/* ============================================== */}
+        {/* TOP */}
+        {/* ============================================== */}
+
+        <div
+          className="
+            border-b border-white/5
+            px-8 py-7
+          "
+        >
+          <div className="flex items-start justify-between">
+            <div>
+              <p
+                className="
+                  text-sm
+                  font-medium
+                  text-cyan-300
+                "
+              >
+                Telemetry Workspace
+              </p>
+
+              <h2
+                className="
+                  mt-3
+                  text-[2rem]
+                  font-semibold
+                  tracking-[-0.05em]
+                  text-on-dark
+                "
+              >
+                Welcome to Aether Ops
+              </h2>
+
+              <p
+                className="
+                  mt-4
+                  max-w-lg
+                  text-sm leading-7
+                  text-muted
+                "
+              >
+                Monitor realtime telemetry,
+                detect signal anomalies,
+                and inspect operational
+                system behavior through a
+                modern observability
+                environment.
+              </p>
+            </div>
+
+            <button
+              onClick={handleClose}
+              className="
+                rounded-xl
+                p-2 text-muted
+                transition-colors duration-200
+                hover:bg-white/5
+                hover:text-on-dark
+              "
+            >
+              <X size={18} />
+            </button>
           </div>
-          <h2 className="label-caps glow-text !text-cyber-cyan !text-[10px] lg:!text-[12px]">PROTOCOL INITIALIZATION</h2>
         </div>
 
-        {/* Content */}
-        <div className="p-6 lg:p-10 space-y-6 lg:space-y-8">
-          <div className="space-y-3 lg:space-y-4">
-            <h3 className="text-xl lg:text-2xl font-black text-white italic tracking-tight uppercase">Mission Briefing</h3>
-            <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-cyber-cyan/5 border border-cyber-cyan/20">
-                <p className="text-[10px] font-black text-cyber-cyan uppercase tracking-widest mb-1">The Problem</p>
-                <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
-                  High-density neural lattices suffer from <span className="text-white font-bold">synthetic drift</span>—unpredictable signal fluctuations that compromises grid stability and data integrity.
-                </p>
+        {/* ============================================== */}
+        {/* CONTENT */}
+        {/* ============================================== */}
+
+        <div className="px-8 py-7">
+          <div className="grid gap-4">
+            {/* CARD */}
+
+            <div
+              className="
+                rounded-2xl
+                border border-white/5
+                bg-white/2
+                p-5
+              "
+            >
+              <div className="flex gap-4">
+                <div
+                  className="
+                    flex h-11 w-11 shrink-0
+                    items-center justify-center
+                    rounded-xl
+                    bg-cyan-400/10
+                    text-cyan-300
+                  "
+                >
+                  <Activity size={18} />
+                </div>
+
+                <div>
+                  <h3
+                    className="
+                      text-sm font-semibold
+                      text-on-dark
+                    "
+                  >
+                    Live telemetry monitoring
+                  </h3>
+
+                  <p
+                    className="
+                      mt-2
+                      text-sm leading-7
+                      text-muted
+                    "
+                  >
+                    Observe live signal streams,
+                    operational metrics,
+                    and realtime system activity.
+                  </p>
+                </div>
               </div>
-              <div className="p-4 rounded-xl bg-cyber-purple/5 border border-cyber-purple/20">
-                <p className="text-[10px] font-black text-cyber-purple uppercase tracking-widest mb-1">The Solution</p>
-                <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
-                  Aether Ops utilizes an <span className="text-white font-bold">adaptive Z-score engine</span> to monitor 8+ telemetry vectors in real-time, instantly isolating drift anomalies before they cascade.
-                </p>
+            </div>
+
+            {/* CARD */}
+
+            <div
+              className="
+                rounded-2xl
+                border border-white/5
+                bg-white/2
+                p-5
+              "
+            >
+              <div className="flex gap-4">
+                <div
+                  className="
+                    flex h-11 w-11 shrink-0
+                    items-center justify-center
+                    rounded-xl
+                    bg-emerald-400/10
+                    text-emerald-300
+                  "
+                >
+                  <Shield size={18} />
+                </div>
+
+                <div>
+                  <h3
+                    className="
+                      text-sm font-semibold
+                      text-on-dark
+                    "
+                  >
+                    Adaptive anomaly detection
+                  </h3>
+
+                  <p
+                    className="
+                      mt-2
+                      text-sm leading-7
+                      text-muted
+                    "
+                  >
+                    Detect abnormal signal
+                    deviations and monitor
+                    operational confidence
+                    in realtime.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 lg:gap-4">
-            <div className="flex items-start gap-4 p-4 lg:p-4 rounded-xl lg:rounded-2xl bg-white/[0.02] border border-white/5">
-              <div className="p-2 bg-cyber-cyan/10 rounded-lg shrink-0">
-                <Activity size={18} className="text-cyber-cyan" />
-              </div>
-              <div>
-                <p className="text-[10px] lg:text-xs font-black text-white uppercase tracking-wider mb-1">Live Grid Telemetry</p>
-                <p className="text-[10px] lg:text-[11px] text-slate-500 font-medium">Full-spectrum visibility into the neural lattice with sub-10ms latency.</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-4 p-4 lg:p-4 rounded-xl lg:rounded-2xl bg-white/[0.02] border border-white/5">
-              <div className="p-2 bg-cyber-purple/10 rounded-lg shrink-0">
-                <Shield size={18} className="text-cyber-purple" />
-              </div>
-              <div>
-                <p className="text-[10px] lg:text-xs font-black text-white uppercase tracking-wider mb-1">AI Mitigation</p>
-                <p className="text-[10px] lg:text-[11px] text-slate-500 font-medium">Active neutralization of signal deviations beyond 2.0σ in real-time.</p>
-              </div>
-            </div>
-          </div>
+          {/* CTA */}
 
           <button
             onClick={handleClose}
-            className="w-full cyber-button-primary h-12 lg:h-14 text-[10px] lg:text-xs tracking-[0.2em]"
+            className="
+              mt-8 w-full
+              rounded-2xl
+              bg-cyan-400
+              px-6 py-4
+              text-sm
+              font-semibold
+              text-black
+              transition-all duration-200
+
+              hover:bg-cyan-300
+              hover:shadow-[0_0_40px_rgba(34,211,238,0.18)]
+            "
           >
-            INITIALIZE LINK
+            Open workspace
           </button>
-          
-          <p className="text-center text-[8px] lg:text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-            v1.0.0-CORE // SECURE CONNECTION VERIFIED
+
+          {/* FOOTNOTE */}
+
+          <p
+            className="
+              mt-5
+              text-center
+              text-xs
+              text-muted
+            "
+          >
+            Realtime operational telemetry ·
+            Observability platform v1.0
           </p>
         </div>
-
-        {/* Close Button */}
-        <button 
-          onClick={handleClose}
-          className="absolute top-4 lg:top-6 right-4 lg:right-6 p-2 text-slate-500 hover:text-white transition-colors"
-        >
-          <X className="w-4.5 h-4.5 lg:w-5 lg:h-5" />
-        </button>
       </div>
     </div>
   );

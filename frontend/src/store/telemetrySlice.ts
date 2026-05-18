@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { TelemetryReading, AnomalyEvent } from '../types';
+import { TelemetryReading, AnomalyEvent, MetricKey } from '../types';
 
 export interface TelemetryState {
   readings: TelemetryReading[];
@@ -9,6 +9,12 @@ export interface TelemetryState {
   messageCount: number;
   isPaused: boolean;
   anomalySensitivity: number;
+  selectedMetrics: readonly MetricKey[];
+  healthScore: number;
+  staleStream: boolean;
+  throughput: number;
+  replayMode: boolean;
+  replayPosition: number;
   showAnomalies: boolean;
   calibrationMode: boolean;
   signalNormalizationActive: boolean;
@@ -25,6 +31,12 @@ const initialState: TelemetryState = {
   messageCount: 0,
   isPaused: false,
   anomalySensitivity: 2.0,
+  selectedMetrics: ['temperature', 'voltage', 'signalNoise', 'laserStability', 'controlSignalDrift', 'errorRate', 'signalIntegrity'],
+  healthScore: 100,
+  staleStream: false,
+  throughput: 0,
+  replayMode: false,
+  replayPosition: 0,
   showAnomalies: true,
   calibrationMode: false,
   signalNormalizationActive: true,
@@ -41,6 +53,8 @@ const telemetrySlice = createSlice({
         state.readings.shift();
       }
       state.messageCount += 1;
+      state.throughput += 1;
+      state.staleStream = false;
     },
     addAnomaly: (state, action: PayloadAction<AnomalyEvent>) => {
       state.anomalies.unshift(action.payload);
@@ -50,6 +64,9 @@ const telemetrySlice = createSlice({
     },
     setConnected: (state, action: PayloadAction<boolean>) => {
       state.connected = action.payload;
+      if (!action.payload) {
+        state.staleStream = true;
+      }
     },
     setWsLatency: (state, action: PayloadAction<number>) => {
       state.wsLatency = action.payload;
@@ -59,6 +76,24 @@ const telemetrySlice = createSlice({
     },
     setAnomalySensitivity: (state, action: PayloadAction<number>) => {
       state.anomalySensitivity = action.payload;
+    },
+    setSelectedMetrics: (state, action: PayloadAction<readonly MetricKey[]>) => {
+      state.selectedMetrics = [...action.payload];
+    },
+    setHealthScore: (state, action: PayloadAction<number>) => {
+      state.healthScore = action.payload;
+    },
+    setStaleStream: (state, action: PayloadAction<boolean>) => {
+      state.staleStream = action.payload;
+    },
+    updateThroughput: (state, action: PayloadAction<number>) => {
+      state.throughput = Math.max(0, state.throughput + action.payload);
+    },
+    setReplayMode: (state, action: PayloadAction<boolean>) => {
+      state.replayMode = action.payload;
+    },
+    setReplayPosition: (state, action: PayloadAction<number>) => {
+      state.replayPosition = Math.min(Math.max(0, action.payload), state.readings.length ? state.readings[state.readings.length - 1].timestamp - state.readings[0].timestamp : 0);
     },
     setShowAnomalies: (state, action: PayloadAction<boolean>) => {
       state.showAnomalies = action.payload;
@@ -77,8 +112,10 @@ const telemetrySlice = createSlice({
     },
     clearReadings: (state) => {
       state.readings = [];
-    },
-  },
+      state.throughput = 0;
+      state.messageCount = 0;
+    }
+  }
 });
 
 export const {
@@ -88,12 +125,18 @@ export const {
   setWsLatency,
   setIsPaused,
   setAnomalySensitivity,
+  setSelectedMetrics,
+  setHealthScore,
+  setStaleStream,
+  updateThroughput,
+  setReplayMode,
+  setReplayPosition,
   setShowAnomalies,
   setCalibrationMode,
   setSignalNormalization,
   setManualOverride,
   clearAnomalies,
-  clearReadings,
+  clearReadings
 } = telemetrySlice.actions;
 
 export default telemetrySlice.reducer;

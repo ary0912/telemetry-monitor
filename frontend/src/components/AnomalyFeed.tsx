@@ -1,113 +1,373 @@
-import { useAppDispatch, useAppSelector } from '../store';
+import { memo, useMemo } from 'react';
+
+import {
+  AlertCircleIcon,
+  DownloadIcon,
+  ShieldAlert,
+  TrashIcon,
+  TrendingUp
+} from 'lucide-react';
+
+import {
+  useAppDispatch,
+  useAppSelector
+} from '../store';
+
 import { clearAnomalies } from '../store/telemetrySlice';
+
 import { AnomalyEvent } from '../types';
-import { formatRelativeTime } from '../utils/formatting';
-import { AlertCircleIcon, DownloadIcon, TrashIcon, TrendingUp, ShieldAlert } from 'lucide-react';
-import { exportAnomaliesAsCSV, downloadCSV } from '../utils/formatting';
+
+import {
+  downloadCSV,
+  exportAnomaliesAsCSV,
+  formatRelativeTime
+} from '../utils/formatting';
 
 interface Props {
   anomalies: AnomalyEvent[];
 }
 
-export function AnomalyFeed({ anomalies }: Props) {
+function AnomalyFeedComponent({
+  anomalies
+}: Props) {
   const dispatch = useAppDispatch();
-  const { showAnomalies } = useAppSelector((state) => state.telemetry);
+
+  const { showAnomalies } = useAppSelector(
+    (state) => state.telemetry
+  );
+
+  const visibleAnomalies = useMemo(
+    () => anomalies.slice(0, 8),
+    [anomalies]
+  );
 
   const handleExport = () => {
     const csv = exportAnomaliesAsCSV(anomalies);
-    downloadCSV(csv, `anomalies-${new Date().getTime()}.csv`);
+
+    downloadCSV(
+      csv,
+      `telemetry-anomalies-${Date.now()}.csv`
+    );
   };
 
-  const getDeviationStyle = (deviation: number) => {
+  const getSeverity = (deviation: number) => {
     const abs = Math.abs(deviation);
-    if (abs > 3) return { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/20', accent: 'bg-rose-500' };
-    if (abs > 2.5) return { color: 'text-cyber-amber', bg: 'bg-amber-500/10', border: 'border-amber-500/20', accent: 'bg-amber-500' };
-    return { color: 'text-cyber-cyan', bg: 'bg-cyan-500/10', border: 'border-cyan-500/20', accent: 'bg-cyan-500' };
+
+    if (abs >= 3) {
+      return {
+        badge: 'critical',
+        accent: 'bg-m-red',
+        surface: 'bg-m-red/10',
+        text: 'text-m-red'
+      };
+    }
+
+    if (abs >= 2.5) {
+      return {
+        badge: 'elevated',
+        accent: 'bg-warning',
+        surface: 'bg-warning/10',
+        text: 'text-warning'
+      };
+    }
+
+    return {
+      badge: 'moderate',
+      accent: 'bg-m-blue-light',
+      surface: 'bg-m-blue-light/10',
+      text: 'text-m-blue-light'
+    };
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Empty State */}
-      {!anomalies.length && (
-        <div className="flex-1 flex flex-col items-center justify-center space-y-6 opacity-30 group-hover:opacity-100 transition-opacity duration-700">
-          <div className="relative">
-            <ShieldAlert size={48} strokeWidth={1} className="text-slate-400" />
-            <div className="absolute inset-0 animate-ping opacity-20">
-              <ShieldAlert size={48} strokeWidth={1} className="text-cyan-500" />
-            </div>
+    <div className="flex h-full flex-col">
+      {/* ===================================================== */}
+      {/* EMPTY */}
+      {/* ===================================================== */}
+
+      {!visibleAnomalies.length && (
+        <div
+          className="
+            flex flex-1 flex-col
+            items-center justify-center
+            px-6 py-12
+          "
+        >
+          <div
+            className="
+              flex h-16 w-16
+              items-center justify-center
+              rounded-2xl
+              border border-hairline
+              bg-surface-card/70
+            "
+          >
+            <ShieldAlert
+              size={28}
+              className="text-success"
+            />
           </div>
-          <div className="text-center space-y-2">
-            <p className="label-caps !text-slate-400">Signal Integrity: 100.0%</p>
-            <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">No orbital variance detected in current session</p>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm font-medium text-on-dark">
+              No active anomalies
+            </p>
+
+            <p className="mt-3 max-w-xs text-sm leading-7 text-body">
+              All telemetry streams are currently
+              operating within expected signal
+              thresholds.
+            </p>
           </div>
         </div>
       )}
 
-      {/* Anomalies list */}
-      <div className="flex-1 overflow-y-auto pr-1">
-        <div className="space-y-4">
-          {anomalies.map((anomaly, idx) => {
-            const style = getDeviationStyle(anomaly.deviation);
-            return (
-              <div
-                key={idx}
-                className="group relative flex flex-col gap-3 p-4 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.04] transition-all duration-300 overflow-hidden"
-              >
-                <div className={`absolute top-0 left-0 w-full h-[1px] ${style.accent} opacity-30 group-hover:opacity-100 transition-opacity`} />
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-1.5 rounded-lg ${style.bg} ${style.border}`}>
-                      <TrendingUp size={14} className={style.color} />
-                    </div>
-                    <span className="text-[10px] font-black text-white uppercase tracking-widest">{anomaly.metric}</span>
-                  </div>
-                  <span className="text-[9px] text-slate-500 font-bold uppercase tabular-nums">
-                    {formatRelativeTime(anomaly.timestamp)}
-                  </span>
-                </div>
+      {/* ===================================================== */}
+      {/* LIST */}
+      {/* ===================================================== */}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest">Variance Depth</p>
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-mono font-black tabular-nums ${style.color}`}>
-                        Δ {anomaly.deviation.toFixed(2)}σ
-                      </span>
+      {!!visibleAnomalies.length && (
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-3">
+            {visibleAnomalies.map((anomaly, idx) => {
+              const severity = getSeverity(
+                anomaly.deviation
+              );
+
+              return (
+                <div
+                  key={`${anomaly.metric}-${idx}`}
+                  className="
+                    group overflow-hidden
+                    rounded-xl
+                    border border-hairline
+                    bg-surface-card/70
+                    transition-all duration-200
+
+                    hover:border-white/[0.08]
+                    hover:bg-surface-card
+                  "
+                >
+                  {/* TOP ACCENT */}
+
+                  <div
+                    className={`h-[1px] w-full ${severity.accent} opacity-60`}
+                  />
+
+                  {/* CONTENT */}
+
+                  <div className="p-5">
+                    {/* TOP */}
+
+                    <div className="flex items-start justify-between gap-4">
+                      {/* LEFT */}
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`
+                              flex h-10 w-10 shrink-0
+                              items-center justify-center
+                              rounded-xl
+                              ${severity.surface}
+                            `}
+                          >
+                            <TrendingUp
+                              size={18}
+                              className={severity.text}
+                            />
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <h4 className="truncate text-sm font-medium text-on-dark">
+                                {anomaly.metric}
+                              </h4>
+
+                              <div
+                                className={`
+                                  rounded-full
+                                  px-2 py-1
+                                  text-[10px]
+                                  uppercase tracking-[0.18em]
+
+                                  ${severity.surface}
+                                  ${severity.text}
+                                `}
+                              >
+                                {severity.badge}
+                              </div>
+                            </div>
+
+                            <p className="mt-2 text-sm leading-7 text-body">
+                              Signal variance exceeded
+                              operational baseline
+                              thresholds.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* TIME */}
+
+                      <div className="shrink-0 text-right">
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                          detected
+                        </p>
+
+                        <p className="mt-2 text-xs font-medium text-body">
+                          {formatRelativeTime(
+                            anomaly.timestamp
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* METRICS */}
+
+                    <div
+                      className="
+                        mt-5 grid gap-3
+
+                        sm:grid-cols-2
+                      "
+                    >
+                      {/* DEVIATION */}
+
+                      <div
+                        className="
+                          rounded-xl
+                          border border-hairline
+                          bg-surface-soft/70
+                          p-4
+                        "
+                      >
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                          deviation
+                        </p>
+
+                        <div className="mt-3 flex items-end gap-2">
+                          <span
+                            className={`text-2xl font-semibold tracking-[-0.05em] ${severity.text}`}
+                          >
+                            {anomaly.deviation.toFixed(
+                              2
+                            )}
+                          </span>
+
+                          <span className="pb-1 text-sm text-muted">
+                            σ
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* VALUE */}
+
+                      <div
+                        className="
+                          rounded-xl
+                          border border-hairline
+                          bg-surface-soft/70
+                          p-4
+                        "
+                      >
+                        <p className="text-[10px] uppercase tracking-[0.18em] text-muted">
+                          signal value
+                        </p>
+
+                        <div className="mt-3 flex items-end gap-2">
+                          <span className="text-2xl font-semibold tracking-[-0.05em] text-on-dark">
+                            {anomaly.value.toFixed(3)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-1 text-right">
-                    <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest">Peak Amplitude</p>
-                    <p className="text-sm font-mono font-black text-white tabular-nums">
-                      {anomaly.value.toFixed(3)}
-                    </p>
-                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Actions */}
-      <div className="mt-8 grid grid-cols-2 gap-4 pt-6 border-t border-white/5">
+      {/* ===================================================== */}
+      {/* ACTIONS */}
+      {/* ===================================================== */}
+
+      <div
+        className="
+          mt-6 grid gap-3
+          border-t border-hairline
+          pt-6
+
+          sm:grid-cols-2
+        "
+      >
+        {/* EXPORT */}
+
         <button
           onClick={handleExport}
-          disabled={anomalies.length === 0}
-          className="cyber-button-primary disabled:opacity-20 flex items-center justify-center gap-3 text-[10px] tracking-widest h-11"
+          disabled={!anomalies.length}
+          className="
+            flex h-12 items-center justify-center gap-3
+            rounded-xl
+            border border-hairline
+            bg-surface-card/70
+            text-sm font-medium text-on-dark
+            transition-all duration-200
+
+            hover:border-m-blue-light/20
+            hover:bg-m-blue-light/10
+
+            disabled:cursor-not-allowed
+            disabled:opacity-40
+
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-m-blue-light/40
+          "
         >
-          <DownloadIcon size={14} />
-          EXPORT LOGS
+          <DownloadIcon size={16} />
+
+          Export logs
         </button>
+
+        {/* CLEAR */}
+
         <button
-          onClick={() => dispatch(clearAnomalies())}
-          disabled={anomalies.length === 0}
-          className="cyber-button disabled:opacity-20 flex items-center justify-center gap-3 text-[10px] tracking-widest h-11 hover:!text-rose-400 hover:!border-rose-500/30"
+          onClick={() =>
+            dispatch(clearAnomalies())
+          }
+          disabled={!anomalies.length}
+          className="
+            flex h-12 items-center justify-center gap-3
+            rounded-xl
+            border border-hairline
+            bg-surface-card/70
+            text-sm font-medium text-body
+            transition-all duration-200
+
+            hover:border-m-red/20
+            hover:bg-m-red/10
+            hover:text-m-red
+
+            disabled:cursor-not-allowed
+            disabled:opacity-40
+
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-m-red/30
+          "
         >
-          <TrashIcon size={14} />
-          WIPE BUFFER
+          <TrashIcon size={16} />
+
+          Clear buffer
         </button>
       </div>
     </div>
   );
 }
+
+export const AnomalyFeed = memo(
+  AnomalyFeedComponent
+);

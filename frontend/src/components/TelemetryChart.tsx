@@ -1,181 +1,501 @@
-import React, { useMemo } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  Area,
-  AreaChart
-} from 'recharts';
-import { TelemetryReading } from '../types';
-import { formatMetricValue } from '../utils/anomalyDetection';
-import { DISPLAY_METRICS, METRIC_CONFIGS } from '../utils/constants';
+import { useMemo } from 'react';
 
-interface Props {
+import {
+  Area,
+  AreaChart,
+  Brush,
+  CartesianGrid,
+  Legend,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis
+} from 'recharts';
+
+import {
+  Activity,
+  Radio,
+  SignalHigh
+} from 'lucide-react';
+
+import {
+  TelemetryReading,
+  MetricKey
+} from '../types';
+
+import {
+  DISPLAY_METRICS,
+  METRIC_CONFIGS
+} from '../utils/constants';
+
+import {
+  formatMetricValue
+} from '../utils/anomalyDetection';
+
+interface TelemetryChartProps {
   readings: TelemetryReading[];
+  selectedMetrics?: readonly MetricKey[];
 }
 
-export function TelemetryChart({ readings }: Props) {
-  // Memoize chart data to avoid unnecessary re-renders
+export function TelemetryChart({
+  readings,
+  selectedMetrics
+}: TelemetryChartProps) {
+  /**
+   * =================================================
+   * TRANSFORMED DATA
+   * =================================================
+   */
+
   const chartData = useMemo(
     () =>
-      readings.map((r) => ({
-        timestamp: r.timestamp,
-        temperature: r.temperature,
-        voltage: r.voltage * 100,
-        signalNoise: r.signalNoise * 100,
-        laserStability: r.laserStability,
-        controlSignalDrift: r.controlSignalDrift * 100,
-        errorRate: r.errorRate * 1000,
-        signalIntegrity: r.signalIntegrity
+      readings.map((reading) => ({
+        timestamp: reading.timestamp,
+
+        ...Object.fromEntries(
+          DISPLAY_METRICS.map((metric) => [
+            metric,
+            reading[metric]
+          ])
+        )
       })),
     [readings]
   );
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (!active || !payload) return null;
+  /**
+   * =================================================
+   * ACTIVE METRICS
+   * =================================================
+   */
 
+  const activeMetrics =
+    selectedMetrics?.length
+      ? selectedMetrics
+      : DISPLAY_METRICS;
+
+  /**
+   * =================================================
+   * TOOLTIP
+   * =================================================
+   */
+
+  const tooltipFormatter = (
+    value: number,
+    name: string
+  ) => [
+    formatMetricValue(
+      value,
+      name as MetricKey
+    ),
+    name
+  ];
+
+  /**
+   * =================================================
+   * EMPTY STATE
+   * =================================================
+   */
+
+  if (!readings.length) {
     return (
-      <div className="glass-card rounded-xl px-4 py-3 shadow-premium border border-white/10">
-        <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-3 border-b border-white/5 pb-2">
-          {new Date(payload[0]?.payload?.timestamp).toLocaleTimeString()}
+      <div
+        className="
+          flex min-h-[520px] flex-col items-center justify-center
+          rounded-[28px]
+          border border-white/5
+          bg-[#07101A]/90
+          px-8 text-center
+        "
+      >
+        <div
+          className="
+            flex h-20 w-20 items-center justify-center
+            rounded-3xl
+            border border-white/5
+            bg-white/3
+          "
+        >
+          <SignalHigh
+            size={34}
+            className="text-m-blue-light"
+          />
+        </div>
+
+        <h3 className="mt-8 text-[1.8rem] font-semibold tracking-[-0.05em] text-on-dark">
+          Awaiting telemetry stream
+        </h3>
+
+        <p className="mt-4 max-w-md text-sm leading-7 text-muted">
+          The observability engine is waiting for
+          incoming telemetry packets and live signal
+          synchronization.
         </p>
-        <div className="space-y-2">
-          {payload.map((entry: any, idx: number) => (
-            <div key={idx} className="flex items-center justify-between gap-6">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{entry.name}</span>
-              <span style={{ color: entry.color }} className="text-[10px] font-mono font-black">
-                {entry.value.toFixed(2)}
-              </span>
-            </div>
-          ))}
+
+        <div className="mt-8 flex items-center gap-3 rounded-full border border-m-blue-light/10 bg-m-blue-light/10 px-5 py-3">
+          <div className="h-2 w-2 animate-pulse rounded-full bg-m-blue-light" />
+
+          <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-m-blue-light">
+            Standby mode
+          </span>
         </div>
       </div>
     );
-  };
+  }
 
   return (
-    <div className="w-full h-full flex flex-col p-4 lg:p-8">
-      <div className="mb-4 lg:mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-base lg:text-xl font-black text-white glow-text uppercase tracking-[0.3em] italic">Grid Telemetry</h2>
-          <div className="flex items-center gap-3 mt-1">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <p className="text-[8px] lg:text-[10px] text-slate-500 font-black uppercase tracking-widest leading-none">
-              Nodes: {readings.length} <span className="hidden sm:inline">// Status: Nominal</span>
+    <div
+      className="
+        relative overflow-hidden
+        rounded-[30px]
+        border border-white/5
+        bg-[#07101A]/95
+        backdrop-blur-2xl
+      "
+    >
+      {/* ================================================= */}
+      {/* AMBIENT GLOW */}
+      {/* ================================================= */}
+
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[15%] top-[-10%] h-[280px] w-[280px] rounded-full bg-m-blue-light/10 blur-[120px]" />
+
+        <div className="absolute bottom-[-20%] right-[10%] h-[260px] w-[260px] rounded-full bg-electric-blue/10 blur-[120px]" />
+      </div>
+
+      {/* ================================================= */}
+      {/* HEADER */}
+      {/* ================================================= */}
+
+      <div className="relative z-10 border-b border-white/5 px-6 py-5">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          {/* LEFT */}
+
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-m-blue-light shadow-[0_0_10px_rgba(56,189,248,0.5)]" />
+
+              <p className="text-[10px] uppercase tracking-[0.28em] text-muted">
+                Signal waveform analysis
+              </p>
+            </div>
+
+            <h3 className="mt-4 text-[1.8rem] font-semibold tracking-[-0.06em] text-on-dark">
+              Realtime telemetry correlation
+            </h3>
+
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted">
+              Monitor live metric relationships,
+              operational fluctuations, anomaly drift,
+              and adaptive signal behavior through
+              synchronized telemetry streams.
             </p>
           </div>
+
+          {/* RIGHT */}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <StatusPill
+              icon={<Activity size={13} />}
+              label={`${activeMetrics.length} metrics`}
+            />
+
+            <StatusPill
+              icon={<Radio size={13} />}
+              label="Realtime sync"
+            />
+
+            <div className="rounded-full border border-emerald-500/15 bg-emerald-500/10 px-4 py-2">
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-300">
+                Stream active
+              </span>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2 lg:gap-3 w-full sm:w-auto">
-          <div className="flex-1 sm:flex-none px-3 lg:px-4 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-[8px] lg:text-[9px] font-black text-cyber-cyan uppercase tracking-widest flex items-center justify-center gap-2">
-            <div className="w-1 h-1 rounded-full bg-cyber-cyan animate-ping text-center" />
-            Live Stream
-          </div>
-          <div className="flex-1 sm:flex-none px-3 lg:px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[8px] lg:text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">
-            60 FPS / HD
-          </div>
+
+        {/* ================================================= */}
+        {/* ACTIVE METRICS */}
+        {/* ================================================= */}
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          {activeMetrics.map((metric) => {
+            const config = METRIC_CONFIGS[metric];
+
+            return (
+              <div
+                key={metric}
+                className="
+                  flex items-center gap-2
+                  rounded-full
+                  border border-white/5
+                  bg-white/3
+                  px-3 py-2
+                "
+              >
+                <div
+                  className="h-2 w-2 rounded-full"
+                  style={{
+                    backgroundColor: config.color,
+                    boxShadow: `0 0 10px ${config.color}`
+                  }}
+                />
+
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-on-dark">
+                  {config.label}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {readings.length === 0 ? (
-        <div className="w-full flex-1 flex flex-col items-center justify-center space-y-4">
-          <div className="relative w-16 h-16 lg:w-24 lg:h-24">
-            <div className="absolute inset-0 rounded-full border-2 border-white/5" />
-            <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-cyber-cyan animate-spin" />
-            <div className="absolute inset-2 lg:inset-4 rounded-full border border-white/5" />
-            <div className="absolute inset-2 lg:inset-4 rounded-full border border-transparent border-b-cyber-purple animate-spin-reverse" />
-          </div>
-          <div className="text-center px-4">
-            <p className="label-caps glow-text text-cyber-cyan !text-[9px] lg:!text-[10px]">Establishing Connection</p>
-            <p className="text-[8px] lg:text-[10px] text-slate-600 mt-2 font-bold uppercase tracking-widest animate-pulse max-w-xs mx-auto text-center">Syncing with production grid telemetry via neural link...</p>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 min-h-0 bg-white/[0.01] rounded-2xl border border-white/5 p-2 lg:p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+      {/* ================================================= */}
+      {/* CHART */}
+      {/* ================================================= */}
+
+      <div className="relative z-10 px-3 pb-3 pt-5 sm:px-5 sm:pb-5">
+        <div className="h-[560px] rounded-[26px] border border-white/5 bg-[#040B14]/90 p-4 sm:p-6">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+          >
+            <AreaChart
+              data={chartData}
+              margin={{
+                top: 20,
+                right: 10,
+                left: -22,
+                bottom: 10
+              }}
+            >
+              {/* ================================================= */}
+              {/* DEFINITIONS */}
+              {/* ================================================= */}
+
               <defs>
-                {DISPLAY_METRICS.map(metric => (
-                  <linearGradient key={metric} id={`grad-${metric}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={METRIC_CONFIGS[metric].color} stopOpacity={0.1} />
-                    <stop offset="95%" stopColor={METRIC_CONFIGS[metric].color} stopOpacity={0} />
+                {activeMetrics.map((metric) => (
+                  <linearGradient
+                    key={metric}
+                    id={`gradient-${metric}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor={
+                        METRIC_CONFIGS[metric].color
+                      }
+                      stopOpacity={0.28}
+                    />
+
+                    <stop
+                      offset="100%"
+                      stopColor={
+                        METRIC_CONFIGS[metric].color
+                      }
+                      stopOpacity={0}
+                    />
                   </linearGradient>
                 ))}
               </defs>
+
+              {/* ================================================= */}
+              {/* GRID */}
+              {/* ================================================= */}
+
               <CartesianGrid
-                strokeDasharray="4 4"
-                stroke="rgba(255, 255, 255, 0.03)"
                 vertical={false}
-              />
-              <XAxis
-                dataKey="timestamp"
-                type="number"
-                domain={['dataMin', 'dataMax']}
-                tickFormatter={(tick) => new Date(tick).toLocaleTimeString([], { hour12: false, minute: '2-digit', second: '2-digit' })}
-                stroke="#475569"
-                style={{ fontSize: '8px', fontWeight: 700 }}
-                tick={{ fill: '#475569' }}
-                axisLine={false}
-                tickLine={false}
-                minTickGap={30}
-              />
-              <YAxis
-                stroke="#475569"
-                style={{ fontSize: '8px', fontWeight: 700 }}
-                tick={{ fill: '#475569' }}
-                width={35}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip 
-                content={<CustomTooltip />} 
-                cursor={{ stroke: 'rgba(56, 189, 248, 0.2)', strokeWidth: 1 }} 
+                stroke="rgba(148,163,184,0.08)"
+                strokeDasharray="4 4"
               />
 
-              {DISPLAY_METRICS.map(metric => (
+              {/* ================================================= */}
+              {/* X AXIS */}
+              {/* ================================================= */}
+
+              <XAxis
+                dataKey="timestamp"
+                axisLine={false}
+                tickLine={false}
+                minTickGap={42}
+                tick={{
+                  fill: '#64748b',
+                  fontSize: 10
+                }}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleTimeString(
+                    [],
+                    {
+                      hour12: false,
+                      minute: '2-digit',
+                      second: '2-digit'
+                    }
+                  )
+                }
+              />
+
+              {/* ================================================= */}
+              {/* Y AXIS */}
+              {/* ================================================= */}
+
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                width={40}
+                tick={{
+                  fill: '#64748b',
+                  fontSize: 10
+                }}
+              />
+
+              {/* ================================================= */}
+              {/* TOOLTIP */}
+              {/* ================================================= */}
+
+              <Tooltip
+                cursor={{
+                  stroke: '#38bdf8',
+                  strokeOpacity: 0.25
+                }}
+                contentStyle={{
+                  background:
+                    'rgba(7, 16, 26, 0.96)',
+                  border:
+                    '1px solid rgba(255,255,255,0.06)',
+                  borderRadius: '18px',
+                  backdropFilter: 'blur(18px)',
+                  boxShadow:
+                    '0 10px 40px rgba(0,0,0,0.45)'
+                }}
+                labelStyle={{
+                  color: '#cbd5e1',
+                  fontSize: 11,
+                  marginBottom: 8,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase'
+                }}
+                itemStyle={{
+                  color: '#e2e8f0',
+                  fontSize: 12
+                }}
+                formatter={tooltipFormatter}
+                labelFormatter={(value) =>
+                  new Date(value).toLocaleTimeString(
+                    [],
+                    {
+                      hour12: false,
+                      minute: '2-digit',
+                      second: '2-digit'
+                    }
+                  )
+                }
+              />
+
+              {/* ================================================= */}
+              {/* LEGEND */}
+              {/* ================================================= */}
+
+              <Legend
+                wrapperStyle={{
+                  fontSize: 11,
+                  paddingTop: 12
+                }}
+              />
+
+              {/* ================================================= */}
+              {/* AREAS */}
+              {/* ================================================= */}
+
+              {activeMetrics.map((metric) => (
                 <Area
                   key={metric}
                   type="monotone"
                   dataKey={metric}
-                  stroke={METRIC_CONFIGS[metric].color}
-                  fill={`url(#grad-${metric})`}
-                  strokeWidth={2}
+                  name={
+                    METRIC_CONFIGS[metric].label
+                  }
+                  stroke={
+                    METRIC_CONFIGS[metric].color
+                  }
+                  fill={`url(#gradient-${metric})`}
+                  strokeWidth={2.4}
+                  fillOpacity={1}
                   dot={false}
+                  activeDot={{
+                    r: 4,
+                    strokeWidth: 0
+                  }}
                   isAnimationActive={false}
-                  name={METRIC_CONFIGS[metric].label}
                 />
               ))}
+
+              {/* ================================================= */}
+              {/* BASELINE */}
+              {/* ================================================= */}
+
+              <ReferenceLine
+                y={0}
+                stroke="rgba(148,163,184,0.18)"
+              />
+
+              {/* ================================================= */}
+              {/* BRUSH */}
+              {/* ================================================= */}
+
+              <Brush
+                dataKey="timestamp"
+                height={34}
+                stroke="#38bdf8"
+                travellerWidth={10}
+                fill="rgba(15,23,42,0.95)"
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleTimeString(
+                    [],
+                    {
+                      minute: '2-digit',
+                      second: '2-digit'
+                    }
+                  )
+                }
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      )}
+      </div>
+    </div>
+  );
+}
 
-      {/* Legend */}
-      {readings.length > 0 && (
-        <div className="mt-4 lg:mt-8 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 lg:gap-3">
-          {DISPLAY_METRICS.map((metric) => (
-            <div key={metric} className="flex flex-col gap-1.5 lg:gap-2 p-2.5 lg:p-3 rounded-lg lg:rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-all group">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full"
-                  style={{ backgroundColor: METRIC_CONFIGS[metric].color, boxShadow: `0 0 10px ${METRIC_CONFIGS[metric].color}40` }}
-                />
-                <span className="text-slate-500 font-black uppercase text-[8px] lg:text-[10px] tracking-wider group-hover:text-slate-300 transition-colors whitespace-nowrap overflow-hidden text-ellipsis">{METRIC_CONFIGS[metric].label}</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-[10px] lg:text-xs font-mono font-black text-white">
-                  {chartData[chartData.length - 1][metric as keyof typeof chartData[0]].toFixed(1)}
-                </span>
-                <span className="text-[7px] lg:text-[8px] text-slate-600 font-bold uppercase">{METRIC_CONFIGS[metric].unit}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+/* ================================================= */
+/* STATUS PILL */
+/* ================================================= */
+
+function StatusPill({
+  icon,
+  label
+}: {
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <div
+      className="
+        flex items-center gap-2
+        rounded-full
+        border border-white/5
+        bg-white/3
+        px-4 py-2
+      "
+    >
+      <div className="text-m-blue-light">
+        {icon}
+      </div>
+
+      <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-on-dark">
+        {label}
+      </span>
     </div>
   );
 }
